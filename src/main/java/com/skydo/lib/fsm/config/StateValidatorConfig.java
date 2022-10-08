@@ -1,7 +1,7 @@
 package com.skydo.lib.fsm.config;
 
-import com.skydo.lib.fsm.definitions.StateMachineHandler;
-import com.skydo.lib.fsm.definitions.StateMachineHandlerMethod;
+import com.skydo.lib.fsm.definitions.StateMachineValidator;
+import com.skydo.lib.fsm.definitions.StateMachineValidatorMethod;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
@@ -10,12 +10,11 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Set;
 
-public class StateValidator {
+public class StateValidatorConfig {
 
-    private final Logger log = LoggerFactory.getLogger(StateValidator.class.getSimpleName());
+    private final Logger log = LoggerFactory.getLogger(StateValidatorConfig.class.getSimpleName());
 
     private final HashMap<Class<?>, HashMap<String, HashMap<String, Method> > > entityToFieldMap = new HashMap<>();
 
@@ -30,11 +29,11 @@ public class StateValidator {
                 .setScanners(Scanners.MethodsAnnotated, Scanners.TypesAnnotated));
 
         Set<Class<?>> validatorClasses =
-                reflections.get(Scanners.TypesAnnotated.with(StateMachineHandler.class).asClass());
+                reflections.get(Scanners.TypesAnnotated.with(StateMachineValidator.class).asClass());
 
         for (Class<?> validatorClass : validatorClasses) {
 
-            StateMachineHandler stateMachineAnnotation = validatorClass.getAnnotation(StateMachineHandler.class);
+            StateMachineValidator stateMachineAnnotation = validatorClass.getAnnotation(StateMachineValidator.class);
 
             Class<?> entity = stateMachineAnnotation.entity();
 
@@ -57,7 +56,7 @@ public class StateValidator {
 
             for (Method validator : validators) {
 
-                StateMachineHandlerMethod validatorAnnotation = validator.getAnnotation(StateMachineHandlerMethod.class);
+                StateMachineValidatorMethod validatorAnnotation = validator.getAnnotation(StateMachineValidatorMethod.class);
 
                 String fieldValue = validatorAnnotation.fieldValue();
 

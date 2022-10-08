@@ -1,7 +1,7 @@
 package com.skydo.lib.fsm.internal.synchronization.work;
 
 import com.skydo.lib.fsm.exception.StateMachineException;
-import com.skydo.lib.fsm.internal.FSMService;
+import com.skydo.lib.fsm.servicecontributor.FSMService;
 import com.skydo.lib.fsm.internal.tools.StateMachine;
 import com.skydo.lib.fsm.internal.tools.StateTransition;
 import com.skydo.lib.fsm.internal.tools.StateTransitionVoid;

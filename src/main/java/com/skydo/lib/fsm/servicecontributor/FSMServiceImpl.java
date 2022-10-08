@@ -1,26 +1,31 @@
 package com.skydo.lib.fsm.servicecontributor;
 
-import com.skydo.lib.fsm.config.StateValidator;
-import com.skydo.lib.fsm.definitions.StateMachineHandler;
-import com.skydo.lib.fsm.definitions.StateMachineHandlerMethod;
+import com.skydo.lib.fsm.config.StateValidatorConfig;
+import com.skydo.lib.fsm.internal.EntitiesConfigurations;
+import com.skydo.lib.fsm.internal.EntitiesConfigurator;
+import com.skydo.lib.fsm.internal.synchronization.FSMProcessManager;
+import org.hibernate.annotations.common.reflection.ReflectionManager;
 import org.hibernate.boot.spi.MetadataImplementor;
+import org.hibernate.service.ServiceRegistry;
 import org.hibernate.service.spi.Configurable;
-import org.reflections.Reflections;
-import org.reflections.scanners.Scanners;
-import org.reflections.util.ConfigurationBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.Set;
-import java.util.logging.Logger;
 
 public class FSMServiceImpl implements FSMService, Configurable {
 
-    private final static Logger log = Logger.getLogger(com.skydo.lib.fsm.internal.FSMServiceImpl.class.getSimpleName());
+    private final static Logger log = LoggerFactory.getLogger(FSMServiceImpl.class);
 
     private boolean initialized = false;
 
-    public StateValidator stateValidator = new StateValidator();
+    private ServiceRegistry serviceRegistry;
+
+    private EntitiesConfigurations entitiesConfigurations;
+
+    private FSMProcessManager fsmProcessManager;
+
+    private final StateValidatorConfig stateValidatorConfig = new StateValidatorConfig();
 
     @Override
     public boolean isInitialized() {
@@ -32,19 +37,40 @@ public class FSMServiceImpl implements FSMService, Configurable {
 
         log.info("Initialize called");
 
-        stateValidator.createValidatorMap();
+        this.stateValidatorConfig.createValidatorMap();
+
+        this.serviceRegistry = metadata.getMetadataBuildingOptions().getServiceRegistry();
+
+        final ReflectionManager reflectionManager = metadata.getMetadataBuildingOptions().getReflectionManager();
+
+        this.entitiesConfigurations = new EntitiesConfigurator().configure(
+                metadata,
+                serviceRegistry,
+                reflectionManager
+        );
+
+        fsmProcessManager = new FSMProcessManager();
 
         initialized = true;
     }
 
     @Override
-    public StateValidator getStateValidator() {
-        return stateValidator;
+    public StateValidatorConfig getStateValidator() {
+        return stateValidatorConfig;
     }
 
 
     @Override
     public void configure(Map map) {
         log.info("Configure called");
+    }
+
+    public EntitiesConfigurations getEntitiesConfigurations() {
+        return entitiesConfigurations;
+    }
+
+    @Override
+    public FSMProcessManager getFsmProcessManager() {
+        return fsmProcessManager;
     }
 }

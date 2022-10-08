@@ -1,6 +1,6 @@
 package com.skydo.lib.fsm.listener;
 
-import com.skydo.lib.fsm.internal.FSMService;
+import com.skydo.lib.fsm.servicecontributor.FSMService;
 import com.skydo.lib.fsm.internal.synchronization.FSMProcess;
 import org.hibernate.event.spi.PreUpdateEvent;
 import org.hibernate.event.spi.PreUpdateEventListener;

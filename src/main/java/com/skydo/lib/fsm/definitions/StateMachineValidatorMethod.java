@@ -6,10 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface StateMachineHandler {
+@Target(ElementType.METHOD)
+public @interface StateMachineValidatorMethod {
 
-    Class<?> entity();
-
-    String field();
+    String fieldValue();
 }

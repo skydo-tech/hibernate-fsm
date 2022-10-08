@@ -1,6 +1,6 @@
 package com.skydo.lib.fsm.listener;
 
-import com.skydo.lib.fsm.internal.FSMService;
+import com.skydo.lib.fsm.servicecontributor.FSMService;
 import org.hibernate.engine.spi.SessionImplementor;
 
 public abstract class BaseEventListener {
@@ -23,3 +23,4 @@ public abstract class BaseEventListener {
         return fsmService;
     }
 }
+
