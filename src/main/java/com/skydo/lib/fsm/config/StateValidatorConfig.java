@@ -7,10 +7,12 @@ import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class StateValidatorConfig {
 
@@ -24,8 +26,14 @@ public class StateValidatorConfig {
 
     public void createValidatorMap() {
 
+        Set<String> stateMachinePackageScanConfig = EnableStateMachinePackages.Registrar.stateMachinePackageScanConfig;
+
+        log.info(stateMachinePackageScanConfig.toString());
+
+        log.info(String.join(",", stateMachinePackageScanConfig));
+
         Reflections reflections = new Reflections(new ConfigurationBuilder()
-                .forPackage("com.skydo.hibernateevents")
+                .forPackages(StringUtils.toStringArray(stateMachinePackageScanConfig))
                 .setScanners(Scanners.MethodsAnnotated, Scanners.TypesAnnotated));
 
         Set<Class<?>> validatorClasses =
