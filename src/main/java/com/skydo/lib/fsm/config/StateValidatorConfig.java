@@ -1,7 +1,7 @@
 package com.skydo.lib.fsm.config;
 
-import com.skydo.lib.fsm.definitions.StateMachineValidator;
-import com.skydo.lib.fsm.definitions.StateMachineValidatorMethod;
+import com.skydo.lib.fsm.definitions.StateTransition;
+import com.skydo.lib.fsm.definitions.TransitionValidator;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
@@ -12,15 +12,14 @@ import org.springframework.util.StringUtils;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class StateValidatorConfig {
 
     private final Logger log = LoggerFactory.getLogger(StateValidatorConfig.class.getSimpleName());
 
-    private final HashMap<Class<?>, HashMap<String, HashMap<String, Method> > > entityToFieldMap = new HashMap<>();
+    private final HashMap<Class<?>, HashMap<String, HashMap<String, Method>>> entityToFieldMap = new HashMap<>();
 
-    public HashMap<Class<?>, HashMap<String, HashMap<String, Method> > > getValidatorMap() {
+    public HashMap<Class<?>, HashMap<String, HashMap<String, Method>>> getValidatorMap() {
         return entityToFieldMap;
     }
 
@@ -37,11 +36,11 @@ public class StateValidatorConfig {
                 .setScanners(Scanners.MethodsAnnotated, Scanners.TypesAnnotated));
 
         Set<Class<?>> validatorClasses =
-                reflections.get(Scanners.TypesAnnotated.with(StateMachineValidator.class).asClass());
+                reflections.get(Scanners.TypesAnnotated.with(StateTransition.class).asClass());
 
         for (Class<?> validatorClass : validatorClasses) {
 
-            StateMachineValidator stateMachineAnnotation = validatorClass.getAnnotation(StateMachineValidator.class);
+            StateTransition stateMachineAnnotation = validatorClass.getAnnotation(StateTransition.class);
 
             Class<?> entity = stateMachineAnnotation.entity();
 
@@ -64,9 +63,9 @@ public class StateValidatorConfig {
 
             for (Method validator : validators) {
 
-                StateMachineValidatorMethod validatorAnnotation = validator.getAnnotation(StateMachineValidatorMethod.class);
+                TransitionValidator validatorAnnotation = validator.getAnnotation(TransitionValidator.class);
 
-                String fieldValue = validatorAnnotation.fieldValue();
+                String fieldValue = validatorAnnotation.state();
 
                 valuesToValidators.put(fieldValue, validator);
 

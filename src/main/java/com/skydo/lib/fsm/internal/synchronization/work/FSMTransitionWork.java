@@ -1,5 +1,6 @@
 package com.skydo.lib.fsm.internal.synchronization.work;
 
+import com.skydo.lib.fsm.definitions.FSMEntityType;
 import com.skydo.lib.fsm.exception.StateMachineException;
 import com.skydo.lib.fsm.servicecontributor.FSMService;
 import com.skydo.lib.fsm.internal.tools.StateMachine;

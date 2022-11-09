@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface StateMachineValidatorMethod {
+public @interface TransitionValidator {
 
-    String fieldValue();
+    String state();
 }

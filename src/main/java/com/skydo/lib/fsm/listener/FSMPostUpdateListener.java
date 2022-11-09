@@ -30,35 +30,36 @@ public class FSMPostUpdateListener extends BaseEventListener implements PostUpda
         HashMap<Class<?>, HashMap<String, HashMap<String, Method>>> validatorMap = stateValidatorConfig.getValidatorMap();
 
         Object entity = postUpdateEvent.getEntity();
+        final FSMProcess fsmProcess = getFsmService().getFsmProcessManager().get(postUpdateEvent.getSession());
+        Object[] entityOldState = fsmProcess.getCachedEntityState(postUpdateEvent.getId(), postUpdateEvent.getPersister().getEntityName());
 
-        Class<?> entityClass = entity.getClass();
+        Class<? extends Object> entityClass = entity.getClass();
+        HashMap<String, HashMap<String, Method>> fieldToValuesMap = validatorMap.get(entityClass);
 
-        if(validatorMap.containsKey(entityClass)) {
-
+        if (validatorMap.containsKey(entityClass)) {
             String[] propertyNames = postUpdateEvent.getPersister().getPropertyNames();
 
             int[] dirtyProperties = postUpdateEvent.getDirtyProperties();
 
-            for(int propertyIndex : dirtyProperties) {
+            for (int propertyIndex : dirtyProperties) {
 
                 String propertyName = propertyNames[propertyIndex];
 
-                HashMap<String, HashMap<String, Method>> fieldToValuesMap = validatorMap.get(entityClass);
-
-                if(fieldToValuesMap.containsKey(propertyName)) {
+                if (fieldToValuesMap.containsKey(propertyName)) {
 
                     String newValue = postUpdateEvent.getState()[propertyIndex].toString();
+                    String oldValue = entityOldState[propertyIndex].toString();
 
                     HashMap<String, Method> valuesToValidators = fieldToValuesMap.get(propertyName);
 
-                    if(valuesToValidators.containsKey(newValue)) {
+                    if (valuesToValidators.containsKey(newValue)) {
 
                         Method validator = valuesToValidators.get(newValue);
 
                         Class<?> declaringClass = validator.getDeclaringClass();
 
                         try {
-                            validator.invoke(declaringClass.getConstructors()[0].newInstance(), entity);
+                            validator.invoke(declaringClass.getConstructors()[0].newInstance(), postUpdateEvent.getId(), oldValue, newValue);
                         } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
                             throw new RuntimeException(e);
                         }
