@@ -44,9 +44,9 @@ public class FSMServiceImpl implements FSMService, Configurable {
         final ReflectionManager reflectionManager = metadata.getMetadataBuildingOptions().getReflectionManager();
 
         this.entitiesConfigurations = new EntitiesConfigurator().configure(
-                metadata,
-                serviceRegistry,
-                reflectionManager
+            metadata,
+            serviceRegistry,
+            reflectionManager
         );
 
         fsmProcessManager = new FSMProcessManager();

@@ -20,6 +20,10 @@ public class FSMIntegrator implements Integrator {
     private static final Logger log = Logger.getLogger(FSMIntegrator.class.getSimpleName());
 
 
+    /**
+     * Executed while application boots up.
+     * Registers all the listeners
+     */
     @Override
     public void integrate(Metadata metadata, SessionFactoryImplementor sessionFactoryImplementor, SessionFactoryServiceRegistry sessionFactoryServiceRegistry) {
 
