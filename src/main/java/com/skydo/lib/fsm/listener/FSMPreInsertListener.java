@@ -12,7 +12,8 @@ public class FSMPreInsertListener implements PreInsertEventListener {
     @Override
     public boolean onPreInsert(PreInsertEvent event) {
         final String entityName = event.getPersister().getEntityName();
-        log.info("event = " + event);
+        log.info("EntityName = " + entityName);
+        // TODO: What does true/false mean here? For some reason the return type of post<Event> is void
         return false;
     }
 }
