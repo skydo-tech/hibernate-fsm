@@ -1,5 +1,6 @@
 package com.skydo.lib.fsm.integrator;
 
+import com.skydo.lib.fsm.listener.FSMPostInsertListener;
 import com.skydo.lib.fsm.listener.FSMPreInsertListener;
 import com.skydo.lib.fsm.listener.FSMPreUpdateListener;
 import com.skydo.lib.fsm.listener.FSMPostUpdateListener;
