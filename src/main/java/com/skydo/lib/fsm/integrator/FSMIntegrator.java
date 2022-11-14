@@ -47,8 +47,8 @@ public class FSMIntegrator implements Integrator {
         );
 
         listenerRegistry.appendListeners(
-                EventType.POST_INSERT,
-                new
+            EventType.POST_INSERT,
+            new FSMPostInsertListener(fsmService)
         );
 
         listenerRegistry.appendListeners(

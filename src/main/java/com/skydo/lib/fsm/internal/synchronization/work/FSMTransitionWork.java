@@ -2,6 +2,7 @@ package com.skydo.lib.fsm.internal.synchronization.work;
 
 import com.skydo.lib.fsm.definitions.FSMEntityType;
 import com.skydo.lib.fsm.exception.StateMachineException;
+import com.skydo.lib.fsm.exception.StateValidationException;
 import com.skydo.lib.fsm.servicecontributor.FSMService;
 import com.skydo.lib.fsm.internal.tools.StateMachine;
 import com.skydo.lib.fsm.internal.tools.StateTransition;
@@ -30,7 +31,8 @@ public class FSMTransitionWork extends AbstractFsmWorkUnit {
             Serializable id,
             EntityPersister entityPersister,
             Object[] oldState,
-            Object[] newState) {
+            Object[] newState
+    ) {
         super(sessionImplementor, entityName, fsmService, id, entityPersister);
         this.oldState = oldState;
         this.newState = newState;
@@ -42,18 +44,39 @@ public class FSMTransitionWork extends AbstractFsmWorkUnit {
             String propertyName = getEntityPersister().getPropertyNames()[i];
             boolean isPropertyStateful = getFsmService().getEntitiesConfigurations().isStateManaged(entityName, propertyName);
             if (isPropertyStateful) {
-                String oldValue = convertPropertyToString(oldState[i]);
                 String newValue = convertPropertyToString(newState[i]);
+                XProperty property = getFsmService().getEntitiesConfigurations().get(entityName, propertyName);
+                StateMachine stateMachine = property.getAnnotation(StateMachine.class);
+                Transition[] transitions = stateMachine.config();
+                String initialState = stateMachine.initialState();
 
+                /**
+                 * If `oldState` is empty array, it must be a PostInsert event
+                 */
+                if (oldState.length == 0) {
+                    /**
+                     * initial state is not defined, ignore and let it pass
+                     */
+                    if (initialState.equals("")) {
+                        return;
+                    }
+                    if (!newValue.equals(initialState)) {
+                        throw new StateValidationException(
+                            "For entity: " + entityName + " invalid `initialState`: "
+                                + newValue + ". It must be " + initialState
+                        );
+                    }
+                    /**
+                     * otherwise looks good
+                     */
+                    return;
+                }
+
+                String oldValue = convertPropertyToString(oldState[i]);
                 if (oldValue.equals(newValue)) {
                     // This transition is allowed (No change in the state)
                     return;
                 }
-
-                XProperty property = getFsmService().getEntitiesConfigurations().get(entityName, propertyName);
-                StateMachine stateMachine = property.getAnnotation(StateMachine.class);
-
-                Transition[] transitions = stateMachine.config();
 
                 if (transitions.length > 0) {
                     this.checkTransition(oldValue, newValue, transitions);

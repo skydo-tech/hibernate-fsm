@@ -12,7 +12,7 @@ public abstract class BaseEventListener {
     }
 
     protected void checkIfTransactionInProgress(SessionImplementor session) {
-        if ( !session.isTransactionInProgress() ) {
+        if (!session.isTransactionInProgress()) {
             // Historical data would not be flushed to audit tables if outside of active transaction
             // (AuditProcess#doBeforeTransactionCompletion(SessionImplementor) not executed).
             throw new RuntimeException( "Unable to create revision because of non-active transaction" );
