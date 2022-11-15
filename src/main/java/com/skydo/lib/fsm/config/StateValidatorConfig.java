@@ -1,7 +1,9 @@
 package com.skydo.lib.fsm.config;
 
-import com.skydo.lib.fsm.definitions.StateTransition;
-import com.skydo.lib.fsm.definitions.TransitionValidator;
+import com.skydo.lib.fsm.definitions.postupdate.PostUpdateAction;
+import com.skydo.lib.fsm.definitions.postupdate.PostUpdateActionHandler;
+import com.skydo.lib.fsm.definitions.validator.StateTransition;
+import com.skydo.lib.fsm.definitions.validator.TransitionValidator;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
@@ -19,8 +21,6 @@ public class StateValidatorConfig {
 
     private final Logger log = LoggerFactory.getLogger(StateValidatorConfig.class.getSimpleName());
 
-    private final HashMap<Class<?>, HashMap<String, HashMap<String, Method>>> entityFieldValidatorMap = new HashMap<>();
-
     /**
      * e.g. Exporter
        {
@@ -34,11 +34,32 @@ public class StateValidatorConfig {
             })
         }
      */
-    public HashMap<Class<?>, HashMap<String, HashMap<String, Method>>> getValidatorMap() {
+    private final HashMap<Class<?>, HashMap<String, HashMap<String, Method>>> entityFieldValidatorMap = new HashMap<>();
+
+    /**
+     * e.g. Exporter
+       {
+            key: class com.example.fsmwrapper.repository.Exporter,
+            value: ({
+              key: "onboardingState" -> {HashMap@12865}  size = 1,
+              value: ( size = 1
+                { key: "ONBOARDING_COMPLETE", value: method_1 (post update action) },
+              )
+            })
+        }
+     */
+    private final HashMap<Class<?>, HashMap<String, HashMap<String, Method>>> entityFieldPostUpdateActionMap
+            = new HashMap<>();
+
+    public HashMap<Class<?>, HashMap<String, HashMap<String, Method>>> getEntityFieldValidatorMap() {
         return entityFieldValidatorMap;
     }
 
-    public void createValidatorMap() {
+    public HashMap<Class<?>, HashMap<String, HashMap<String, Method>>> getEntityFieldPostUpdateActionMap() {
+        return entityFieldPostUpdateActionMap;
+    }
+
+    public void createEntityFieldValidatorMap() {
         Set<String> stateMachinePackageScanConfig = EnableStateMachinePackages.Registrar.stateMachinePackageScanConfig;
         log.info(stateMachinePackageScanConfig.toString());
         log.info(String.join(",", stateMachinePackageScanConfig));
@@ -48,7 +69,7 @@ public class StateValidatorConfig {
 
         Set<Class<?>> validatorClasses =
                 reflections.get(Scanners.TypesAnnotated.with(StateTransition.class).asClass());
-        for (Class<?> validatorClass : validatorClasses) {
+        for (Class<?> validatorClass: validatorClasses) {
             StateTransition stateMachineAnnotation = validatorClass.getAnnotation(StateTransition.class);
             Class<?> entity = stateMachineAnnotation.entity();
             String field = stateMachineAnnotation.field();
@@ -62,8 +83,13 @@ public class StateValidatorConfig {
             }
             HashMap<String, Method> valuesToValidators = fieldToValuesMap.get(field);
             Method[] validators = validatorClass.getDeclaredMethods();
-            for (Method validator : validators) {
-                if (Arrays.stream(validator.getAnnotations()).anyMatch(
+            for (Method validator: validators) {
+                Annotation[] methodAnnotations = validator.getAnnotations();
+                /**
+                 * Current Assumption method will have only 1 annotation of either
+                 * 1. @TransitionValidator
+                 */
+                if (Arrays.stream(methodAnnotations).anyMatch(
                         annotation -> annotation.annotationType().equals(TransitionValidator.class)
                 )) {
                     TransitionValidator validatorAnnotation = validator.getAnnotation(TransitionValidator.class);
@@ -72,5 +98,54 @@ public class StateValidatorConfig {
                 }
             }
         }
+    }
+
+    public void createEntityFieldPostActionMap() {
+        Set<String> stateMachinePackageScanConfig = EnableStateMachinePackages.Registrar.stateMachinePackageScanConfig;
+        log.info(stateMachinePackageScanConfig.toString());
+        log.info(String.join(",", stateMachinePackageScanConfig));
+        Reflections reflections = new Reflections(new ConfigurationBuilder()
+                .forPackages(StringUtils.toStringArray(stateMachinePackageScanConfig))
+                .setScanners(Scanners.MethodsAnnotated, Scanners.TypesAnnotated));
+
+        Set<Class<?>> postActionHandlerClazzes =
+                reflections.get(Scanners.TypesAnnotated.with(PostUpdateActionHandler.class).asClass());
+
+        for (Class<?> postActionHandlerClazz: postActionHandlerClazzes) {
+            PostUpdateActionHandler postUpdateActionHandler
+                = postActionHandlerClazz.getAnnotation(PostUpdateActionHandler.class);
+            Class<?> entity = postUpdateActionHandler.entity();
+            String field = postUpdateActionHandler.field();
+
+            if (!entityFieldPostUpdateActionMap.containsKey(entity)) {
+                entityFieldPostUpdateActionMap.put(entity, new HashMap<>());
+            }
+
+            HashMap<String, HashMap<String, Method>> fieldToValuesMap = entityFieldPostUpdateActionMap.get(entity);
+            if (!fieldToValuesMap.containsKey(field)) {
+                fieldToValuesMap.put(field, new HashMap<>());
+            }
+            HashMap<String, Method> valuesToPostActions = fieldToValuesMap.get(field);
+            Method[] postActionMethods = postActionHandlerClazz.getDeclaredMethods();
+            for (Method postActionMethod: postActionMethods) {
+                Annotation[] methodAnnotations = postActionMethod.getAnnotations();
+                /**
+                 * Current Assumption method will have only 1 annotation
+                 * 1. @PostUpdateAction
+                 */
+                if (Arrays.stream(methodAnnotations).anyMatch(
+                        annotation -> annotation.annotationType().equals(PostUpdateAction.class)
+                )) {
+                    PostUpdateAction postUpdateAction = postActionMethod.getAnnotation(PostUpdateAction.class);
+                    String fieldValue = postUpdateAction.state();
+                    valuesToPostActions.put(fieldValue, postActionMethod);
+                }
+            }
+        }
+    }
+
+    public void createEntityFieldMaps() {
+        this.createEntityFieldValidatorMap();
+        this.createEntityFieldPostActionMap();
     }
 }

@@ -37,7 +37,7 @@ public class FSMServiceImpl implements FSMService, Configurable {
 
         log.info("Initialize called");
 
-        this.stateValidatorConfig.createValidatorMap();
+        this.stateValidatorConfig.createEntityFieldMaps();
 
         this.serviceRegistry = metadata.getMetadataBuildingOptions().getServiceRegistry();
 
