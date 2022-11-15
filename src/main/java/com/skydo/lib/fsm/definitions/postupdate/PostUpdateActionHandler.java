@@ -11,7 +11,12 @@ import java.lang.annotation.Target;
 
 
 /**
- * Class level config
+ * To use declare a class and annotate with `PostUpdateActionHandler`
+ * Define postUpdate Methods inside that class and annotate it with `PostUpdateAction`.
+ * Make sure to pass correct values for following fields.
+ * 1. entity: Database entity
+ * 2. field: On which state configuration is made
+ * 3. state: `field.value` on which this action should be triggered
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

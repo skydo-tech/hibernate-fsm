@@ -2,7 +2,7 @@ package com.skydo.lib.fsm.config;
 
 import com.skydo.lib.fsm.definitions.postupdate.PostUpdateAction;
 import com.skydo.lib.fsm.definitions.postupdate.PostUpdateActionHandler;
-import com.skydo.lib.fsm.definitions.validator.StateTransition;
+import com.skydo.lib.fsm.definitions.validator.TransitionValidatorHandler;
 import com.skydo.lib.fsm.definitions.validator.TransitionValidator;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
@@ -60,17 +60,17 @@ public class StateValidatorConfig {
     }
 
     public void createEntityFieldValidatorMap() {
+        log.info("Creating Entity Field Validator Map");
         Set<String> stateMachinePackageScanConfig = EnableStateMachinePackages.Registrar.stateMachinePackageScanConfig;
-        log.info(stateMachinePackageScanConfig.toString());
         log.info(String.join(",", stateMachinePackageScanConfig));
         Reflections reflections = new Reflections(new ConfigurationBuilder()
                 .forPackages(StringUtils.toStringArray(stateMachinePackageScanConfig))
                 .setScanners(Scanners.MethodsAnnotated, Scanners.TypesAnnotated));
 
         Set<Class<?>> validatorClasses =
-                reflections.get(Scanners.TypesAnnotated.with(StateTransition.class).asClass());
+                reflections.get(Scanners.TypesAnnotated.with(TransitionValidatorHandler.class).asClass());
         for (Class<?> validatorClass: validatorClasses) {
-            StateTransition stateMachineAnnotation = validatorClass.getAnnotation(StateTransition.class);
+            TransitionValidatorHandler stateMachineAnnotation = validatorClass.getAnnotation(TransitionValidatorHandler.class);
             Class<?> entity = stateMachineAnnotation.entity();
             String field = stateMachineAnnotation.field();
             if (!entityFieldValidatorMap.containsKey(entity)) {
@@ -86,8 +86,7 @@ public class StateValidatorConfig {
             for (Method validator: validators) {
                 Annotation[] methodAnnotations = validator.getAnnotations();
                 /**
-                 * Current Assumption method will have only 1 annotation of either
-                 * 1. @TransitionValidator
+                 * Only consider those methods which are annotated with `TransitionValidator`
                  */
                 if (Arrays.stream(methodAnnotations).anyMatch(
                         annotation -> annotation.annotationType().equals(TransitionValidator.class)
@@ -101,8 +100,8 @@ public class StateValidatorConfig {
     }
 
     public void createEntityFieldPostActionMap() {
+        log.info("Creating Entity Field PostUpdate Action Map");
         Set<String> stateMachinePackageScanConfig = EnableStateMachinePackages.Registrar.stateMachinePackageScanConfig;
-        log.info(stateMachinePackageScanConfig.toString());
         log.info(String.join(",", stateMachinePackageScanConfig));
         Reflections reflections = new Reflections(new ConfigurationBuilder()
                 .forPackages(StringUtils.toStringArray(stateMachinePackageScanConfig))
@@ -130,8 +129,7 @@ public class StateValidatorConfig {
             for (Method postActionMethod: postActionMethods) {
                 Annotation[] methodAnnotations = postActionMethod.getAnnotations();
                 /**
-                 * Current Assumption method will have only 1 annotation
-                 * 1. @PostUpdateAction
+                 * Only consider those methods which are annotated with `PostUpdateAction`
                  */
                 if (Arrays.stream(methodAnnotations).anyMatch(
                         annotation -> annotation.annotationType().equals(PostUpdateAction.class)
