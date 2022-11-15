@@ -9,7 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -61,9 +63,13 @@ public class StateValidatorConfig {
             HashMap<String, Method> valuesToValidators = fieldToValuesMap.get(field);
             Method[] validators = validatorClass.getDeclaredMethods();
             for (Method validator : validators) {
-                TransitionValidator validatorAnnotation = validator.getAnnotation(TransitionValidator.class);
-                String fieldValue = validatorAnnotation.state();
-                valuesToValidators.put(fieldValue, validator);
+                if (Arrays.stream(validator.getAnnotations()).anyMatch(
+                        annotation -> annotation.annotationType().equals(TransitionValidator.class)
+                )) {
+                    TransitionValidator validatorAnnotation = validator.getAnnotation(TransitionValidator.class);
+                    String fieldValue = validatorAnnotation.state();
+                    valuesToValidators.put(fieldValue, validator);
+                }
             }
         }
     }
