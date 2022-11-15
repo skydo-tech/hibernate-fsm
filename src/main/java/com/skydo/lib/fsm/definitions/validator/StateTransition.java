@@ -1,4 +1,4 @@
-package com.skydo.lib.fsm.definitions;
+package com.skydo.lib.fsm.definitions.validator;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

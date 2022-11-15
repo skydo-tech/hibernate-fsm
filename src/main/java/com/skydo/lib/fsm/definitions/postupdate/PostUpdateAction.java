@@ -1,4 +1,4 @@
-package com.skydo.lib.fsm.definitions;
+package com.skydo.lib.fsm.definitions.postupdate;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,11 +6,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Declared over a validation function
+ * @author Raj Sheth
  */
+
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface TransitionValidator {
-
-    String state();
+public @interface PostUpdateAction {
+	String state();
 }
