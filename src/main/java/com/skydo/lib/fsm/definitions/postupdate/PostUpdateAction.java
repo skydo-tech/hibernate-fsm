@@ -9,14 +9,14 @@ import java.lang.annotation.Target;
  * @author Raj Sheth
  */
 
+/**
+ * IMPORTANT: function signature which makes use of this annotation must follow a signature described below
+ * While executing this function from this hibernate layer all these values will be passed.
+ *
+ * `fun postStateActionMethod(entityId: Long, oldFieldValue: Any, newFieldValue: Any)`
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface PostUpdateAction {
-	/**
-	 * IMPORTANT: function signature which makes use of this annotation must follow a signature described below
-	 * While executing this function from this hibernate layer all these values will be passed.
-	 *
-	 * `fun postStateActionMethod(entityId: Long, oldFieldValue: Any, newFieldValue: Any)`
-	 */
 	String state();
 }

@@ -31,24 +31,26 @@ public class FSMIntegrator implements Integrator {
 
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         // Verify that the FSMService is fully initialized and ready to go.
-        if ( !fsmService.isInitialized() ) {
+        if (!fsmService.isInitialized()) {
             throw new HibernateException(
-                    "Expecting FSMService to have been initialized prior to call to FSMIntegrator#integrate"
+                "Expecting FSMService to have been initialized prior to call to FSMIntegrator#integrate"
             );
         }
 
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         // Opt-out of registration if no state managed entities found
-        if ( !fsmService.getEntitiesConfigurations().hasEntities() ) {
+        if (!fsmService.getEntitiesConfigurations().hasEntities()) {
             log.info( "Skipping Envers listener registrations : No audited entities found" );
             return;
         }
 
-        final EventListenerRegistry listenerRegistry = sessionFactoryServiceRegistry.getService(EventListenerRegistry.class);
+        final EventListenerRegistry listenerRegistry = sessionFactoryServiceRegistry.getService(
+            EventListenerRegistry.class
+        );
 
         listenerRegistry.appendListeners(
-                EventType.PRE_INSERT,
-                new FSMPreInsertListener()
+            EventType.PRE_INSERT,
+            new FSMPreInsertListener()
         );
 
         listenerRegistry.appendListeners(
@@ -57,8 +59,8 @@ public class FSMIntegrator implements Integrator {
         );
 
         listenerRegistry.appendListeners(
-                EventType.PRE_UPDATE,
-                new FSMPreUpdateListener(fsmService)
+            EventType.PRE_UPDATE,
+            new FSMPreUpdateListener(fsmService)
         );
 
         listenerRegistry.appendListeners(EventType.POST_UPDATE, new FSMPostUpdateListener(fsmService));
@@ -66,7 +68,10 @@ public class FSMIntegrator implements Integrator {
     }
 
     @Override
-    public void disintegrate(SessionFactoryImplementor sessionFactoryImplementor, SessionFactoryServiceRegistry sessionFactoryServiceRegistry) {
+    public void disintegrate(
+        SessionFactoryImplementor sessionFactoryImplementor,
+        SessionFactoryServiceRegistry sessionFactoryServiceRegistry
+    ) {
         log.info("Disintegrate!!");
     }
 }
