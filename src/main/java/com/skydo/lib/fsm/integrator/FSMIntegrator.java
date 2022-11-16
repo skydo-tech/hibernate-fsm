@@ -1,9 +1,6 @@
 package com.skydo.lib.fsm.integrator;
 
-import com.skydo.lib.fsm.listener.FSMPostInsertListener;
-import com.skydo.lib.fsm.listener.FSMPreInsertListener;
-import com.skydo.lib.fsm.listener.FSMPreUpdateListener;
-import com.skydo.lib.fsm.listener.FSMPostUpdateListener;
+import com.skydo.lib.fsm.listener.*;
 import com.skydo.lib.fsm.servicecontributor.FSMService;
 import org.hibernate.HibernateException;
 import org.hibernate.boot.Metadata;
@@ -63,7 +60,15 @@ public class FSMIntegrator implements Integrator {
             new FSMPreUpdateListener(fsmService)
         );
 
-        listenerRegistry.appendListeners(EventType.POST_UPDATE, new FSMPostUpdateListener(fsmService));
+        listenerRegistry.appendListeners(
+            EventType.POST_UPDATE,
+            new FSMPostUpdateListener(fsmService)
+        );
+
+        listenerRegistry.appendListeners(
+            EventType.POST_COMMIT_UPDATE,
+            new FSMPostCommitUpdateListener(fsmService)
+        );
 
     }
 

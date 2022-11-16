@@ -98,57 +98,10 @@ public class FSMPostUpdateListener extends BaseEventListener implements PostUpda
 		return event.getOldState();
 	}
 
-	private boolean onPostUpdateActionExecutor(PostUpdateEvent postUpdateEvent) {
-		StateValidatorConfig stateValidatorConfig = getFsmService().getStateValidator();
-		HashMap<Class<?>, HashMap<String, HashMap<String, Method>>> entityFieldPostUpdateActionMap
-			= stateValidatorConfig.getEntityFieldPostUpdateActionMap();
-
-		Object entity = postUpdateEvent.getEntity();
-		final FSMProcess fsmProcess = getFsmService().getFsmProcessManager().get(postUpdateEvent.getSession());
-		Object[] entityOldState = fsmProcess.getCachedEntityState(
-			postUpdateEvent.getId(), postUpdateEvent.getPersister().getEntityName()
-		);
-
-		Class<? extends Object> entityClass = entity.getClass();
-		HashMap<String, HashMap<String, Method>> fieldToValuesMap = entityFieldPostUpdateActionMap.get(entityClass);
-
-		if (entityFieldPostUpdateActionMap.containsKey(entityClass)) {
-			String[] propertyNames = postUpdateEvent.getPersister().getPropertyNames();
-			int[] dirtyProperties = postUpdateEvent.getDirtyProperties();
-
-			for (int propertyIndex: dirtyProperties) {
-				String propertyName = propertyNames[propertyIndex];
-
-				if (fieldToValuesMap.containsKey(propertyName)) {
-					String newValue = postUpdateEvent.getState()[propertyIndex].toString();
-					String oldValue = entityOldState[propertyIndex].toString();
-					HashMap<String, Method> valuesToPostActionMethods = fieldToValuesMap.get(propertyName);
-
-					if (valuesToPostActionMethods.containsKey(newValue)) {
-						Method postActionMethod = valuesToPostActionMethods.get(newValue);
-						Class<?> declaringClass = postActionMethod.getDeclaringClass();
-						try {
-							postActionMethod.invoke(
-								declaringClass.getConstructors()[0].newInstance(),
-								postUpdateEvent.getId(),
-								oldValue,
-								newValue
-							);
-						} catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
-							throw new RuntimeException(e);
-						}
-					}
-				}
-			}
-		}
-		return true;
-	}
-
 	@Override
 	public void onPostUpdate(PostUpdateEvent postUpdateEvent) {
 		onPostUpdateTransitionCheck(postUpdateEvent);
 		onPostUpdateValidatorCheck(postUpdateEvent);
-		onPostUpdateActionExecutor(postUpdateEvent);
 	}
 
 	@Override
