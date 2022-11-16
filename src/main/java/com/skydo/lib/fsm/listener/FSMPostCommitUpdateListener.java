@@ -36,10 +36,6 @@ public class FSMPostCommitUpdateListener extends BaseEventListener implements Po
 				= stateValidatorConfig.getEntityFieldPostUpdateActionMap();
 
 		Object entity = postUpdateEvent.getEntity();
-		final FSMProcess fsmProcess = getFsmService().getFsmProcessManager().get(postUpdateEvent.getSession());
-		Object[] entityOldState = fsmProcess.getCachedEntityState(
-				postUpdateEvent.getId(), postUpdateEvent.getPersister().getEntityName()
-		);
 
 		Class<? extends Object> entityClass = entity.getClass();
 		HashMap<String, HashMap<String, Method>> fieldToValuesMap = entityFieldPostUpdateActionMap.get(entityClass);
