@@ -87,15 +87,10 @@ public class FSMPostCommitUpdateListener extends BaseEventListener implements Po
 	 * @param event the update event to be handled
 	 */
 	@Override
-	public void onPostUpdateCommitFailed(PostUpdateEvent event) {
-		log.info("onPostUpdateCommitFailed here 1" + event);
-		log.info("onPostUpdateCommitFailed here 2" + event);
-	}
+	public void onPostUpdateCommitFailed(PostUpdateEvent event) {}
 
 	@Override
 	public void onPostUpdate(PostUpdateEvent event) {
-		log.info("on Post Update here 1 " + event);
-		log.info("on Post Update here 2 " + event);
 		onPostUpdateActionExecutor(event);
 	}
 
@@ -108,7 +103,6 @@ public class FSMPostCommitUpdateListener extends BaseEventListener implements Po
 	 */
 	@Override
 	public boolean requiresPostCommitHanding(EntityPersister persister) {
-		log.info("Inside requiresPostCommitHanding---- " + persister);
 		return true;
 	}
 }
