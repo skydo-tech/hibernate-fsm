@@ -74,4 +74,6 @@ Annotated over a class with two variables
 
 	 fun postUpdateHandlerMethod(entityId: Long, oldFieldValue: Any, newFieldValue: Any)
 
-
+This annotation picks up functions and executes **OUTSIDE** of transaction boundary on both of the following events
+1. Post Update
+2. Post Insert: For post insert `oldValue` will always be empty (`""`) string
