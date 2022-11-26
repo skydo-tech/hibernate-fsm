@@ -4,6 +4,7 @@ import com.skydo.lib.fsm.config.StateValidatorConfig;
 import com.skydo.lib.fsm.internal.synchronization.FSMProcess;
 import com.skydo.lib.fsm.internal.synchronization.work.FSMTransitionWork;
 import com.skydo.lib.fsm.internal.synchronization.work.FSMWorkUnit;
+import com.skydo.lib.fsm.internal.tools.Pair;
 import com.skydo.lib.fsm.servicecontributor.FSMService;
 import org.hibernate.event.spi.PostUpdateEvent;
 import org.hibernate.event.spi.PostUpdateEventListener;
@@ -27,14 +28,14 @@ public class FSMPostUpdateListener extends BaseEventListener implements PostUpda
 
         StateValidatorConfig stateValidatorConfig = getFsmService().getStateValidator();
 
-        HashMap<Class<?>, HashMap<String, HashMap<String, Method>>> validatorMap = stateValidatorConfig.getValidatorMap();
+        HashMap<Class<?>, HashMap<String, HashMap<String, Pair<Object, Method>>>> validatorMap = stateValidatorConfig.getValidatorMap();
 
         Object entity = postUpdateEvent.getEntity();
         final FSMProcess fsmProcess = getFsmService().getFsmProcessManager().get(postUpdateEvent.getSession());
         Object[] entityOldState = fsmProcess.getCachedEntityState(postUpdateEvent.getId(), postUpdateEvent.getPersister().getEntityName());
 
         Class<? extends Object> entityClass = entity.getClass();
-        HashMap<String, HashMap<String, Method>> fieldToValuesMap = validatorMap.get(entityClass);
+        HashMap<String, HashMap<String, Pair<Object, Method>>> fieldToValuesMap = validatorMap.get(entityClass);
 
         if (validatorMap.containsKey(entityClass)) {
             String[] propertyNames = postUpdateEvent.getPersister().getPropertyNames();
@@ -50,17 +51,14 @@ public class FSMPostUpdateListener extends BaseEventListener implements PostUpda
                     String newValue = postUpdateEvent.getState()[propertyIndex].toString();
                     String oldValue = entityOldState[propertyIndex].toString();
 
-                    HashMap<String, Method> valuesToValidators = fieldToValuesMap.get(propertyName);
+                    HashMap<String, Pair<Object, Method>> valuesToValidators = fieldToValuesMap.get(propertyName);
 
                     if (valuesToValidators.containsKey(newValue)) {
 
-                        Method validator = valuesToValidators.get(newValue);
-
-                        Class<?> declaringClass = validator.getDeclaringClass();
-
+                        Pair<Object, Method> validator = valuesToValidators.get(newValue);
                         try {
-                            validator.invoke(declaringClass.getConstructors()[0].newInstance(), postUpdateEvent.getId(), oldValue, newValue);
-                        } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
+                            validator.getSecond().invoke(validator.getFirst(), postUpdateEvent.getId(), oldValue, newValue);
+                        } catch (IllegalAccessException | InvocationTargetException  e) {
                             throw new RuntimeException(e);
                         }
 
