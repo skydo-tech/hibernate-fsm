@@ -4,6 +4,7 @@ import com.skydo.lib.fsm.config.StateValidatorConfig;
 import com.skydo.lib.fsm.internal.synchronization.FSMProcess;
 import com.skydo.lib.fsm.internal.synchronization.work.FSMTransitionWork;
 import com.skydo.lib.fsm.internal.synchronization.work.FSMWorkUnit;
+import com.skydo.lib.fsm.internal.tools.Pair;
 import com.skydo.lib.fsm.servicecontributor.FSMService;
 import org.hibernate.event.spi.PostUpdateEvent;
 import org.hibernate.event.spi.PostUpdateEventListener;
@@ -18,96 +19,103 @@ import java.util.concurrent.*;
 
 public class FSMPostUpdateListener extends BaseEventListener implements PostUpdateEventListener {
 
-	private final Logger log = LoggerFactory.getLogger(FSMPostUpdateListener.class.getSimpleName());
+    private final Logger log = LoggerFactory.getLogger(FSMPostUpdateListener.class.getSimpleName());
 
-	public FSMPostUpdateListener(FSMService fsmService) {
-		super(fsmService);
-	}
+    public FSMPostUpdateListener(FSMService fsmService) {
+        super(fsmService);
+    }
 
-	private void onPostUpdateValidatorCheck(PostUpdateEvent postUpdateEvent) {
+    private void onPostUpdateValidatorCheck(PostUpdateEvent postUpdateEvent) {
 
-		StateValidatorConfig stateValidatorConfig = getFsmService().getStateValidator();
-		HashMap<Class<?>, HashMap<String, HashMap<String, Method>>> validatorMap = stateValidatorConfig.getEntityFieldValidatorMap();
-		Object entity = postUpdateEvent.getEntity();
-		final FSMProcess fsmProcess = getFsmService().getFsmProcessManager().get(postUpdateEvent.getSession());
-		Object[] entityOldState = fsmProcess.getCachedEntityState(
-			postUpdateEvent.getId(), postUpdateEvent.getPersister().getEntityName()
-		);
+        StateValidatorConfig stateValidatorConfig = getFsmService().getStateValidator();
 
-		Class<? extends Object> entityClass = entity.getClass();
-		HashMap<String, HashMap<String, Method>> fieldToValuesMap = validatorMap.get(entityClass);
+        HashMap<Class<?>, HashMap<String, HashMap<String, Pair<Object, Method>>>> validatorMap = stateValidatorConfig.getValidatorMap();
 
-		if (validatorMap.containsKey(entityClass)) {
-			String[] propertyNames = postUpdateEvent.getPersister().getPropertyNames();
-			int[] dirtyProperties = postUpdateEvent.getDirtyProperties();
+        Object entity = postUpdateEvent.getEntity();
+        final FSMProcess fsmProcess = getFsmService().getFsmProcessManager().get(postUpdateEvent.getSession());
+        Object[] entityOldState = fsmProcess.getCachedEntityState(postUpdateEvent.getId(), postUpdateEvent.getPersister().getEntityName());
 
-			for (int propertyIndex: dirtyProperties) {
-				String propertyName = propertyNames[propertyIndex];
+        Class<? extends Object> entityClass = entity.getClass();
+        HashMap<String, HashMap<String, Pair<Object, Method>>> fieldToValuesMap = validatorMap.get(entityClass);
 
-				if (fieldToValuesMap.containsKey(propertyName)) {
-					String newValue = postUpdateEvent.getState()[propertyIndex].toString();
-					String oldValue = entityOldState[propertyIndex].toString();
-					HashMap<String, Method> valuesToValidatorMethods = fieldToValuesMap.get(propertyName);
+        if (validatorMap.containsKey(entityClass)) {
+            String[] propertyNames = postUpdateEvent.getPersister().getPropertyNames();
 
-					if (valuesToValidatorMethods.containsKey(newValue)) {
-						Method validatorMethod = valuesToValidatorMethods.get(newValue);
-						Class<?> declaringClass = validatorMethod.getDeclaringClass();
-						try {
-							validatorMethod.invoke(
-								declaringClass.getConstructors()[0].newInstance(),
-								postUpdateEvent.getId(),
-								oldValue,
-								newValue
-							);
-						} catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
-							throw new RuntimeException(e);
-						}
-					}
-				}
-			}
-		}
-	}
+            int[] dirtyProperties = postUpdateEvent.getDirtyProperties();
 
-	private void onPostUpdateTransitionCheck(PostUpdateEvent event) {
+            for (int propertyIndex : dirtyProperties) {
 
-		final String entityName = event.getPersister().getEntityName();
+                String propertyName = propertyNames[propertyIndex];
 
-		if (getFsmService().getEntitiesConfigurations().isStateManaged(entityName)) {
-			checkIfTransactionInProgress(event.getSession());
+                if (fieldToValuesMap.containsKey(propertyName)) {
 
-			final FSMProcess fsmProcess = getFsmService().getFsmProcessManager().get(event.getSession());
+                    String newValue = postUpdateEvent.getState()[propertyIndex].toString();
+                    String oldValue = entityOldState[propertyIndex].toString();
 
-			Object[] oldState = getOldDBState(fsmProcess, entityName, event);
+                    HashMap<String, Pair<Object, Method>> valuesToValidators = fieldToValuesMap.get(propertyName);
 
-			FSMWorkUnit workUnit = new FSMTransitionWork(
-				event.getSession(),
-				entityName,
-				getFsmService(),
-				event.getId(),
-				event.getPersister(),
-				oldState,
-				event.getState()
-			);
+                    if (valuesToValidators.containsKey(newValue)) {
 
-			workUnit.perform();
+                        Pair<Object, Method> validator = valuesToValidators.get(newValue);
+                        try {
+                            validator.getSecond().invoke(validator.getFirst(), postUpdateEvent.getId(), oldValue, newValue);
+                        } catch (IllegalAccessException | InvocationTargetException  e) {
+                            throw new RuntimeException(e);
+                        }
 
-		}
-	}
+                    }
 
-	private Object[] getOldDBState(FSMProcess fsmProcess, String entityName, PostUpdateEvent event) {
-		return event.getOldState();
-	}
 
-	@Override
-	public void onPostUpdate(PostUpdateEvent postUpdateEvent) {
-		onPostUpdateTransitionCheck(postUpdateEvent);
-		onPostUpdateValidatorCheck(postUpdateEvent);
-	}
+                }
 
-	@Override
-	public boolean requiresPostCommitHanding(EntityPersister entityPersister) {
-		return false;
-	}
+
+            }
+
+        }
+    }
+
+    private void onPostUpdateTransitionCheck(PostUpdateEvent event) {
+
+        final String entityName = event.getPersister().getEntityName();
+
+        if (getFsmService().getEntitiesConfigurations().isStateManaged(entityName)) {
+            checkIfTransactionInProgress(event.getSession());
+
+            final FSMProcess fsmProcess = getFsmService().getFsmProcessManager().get(event.getSession());
+
+            Object[] oldState = getOldDBState(fsmProcess, entityName, event);
+
+            FSMWorkUnit workUnit = new FSMTransitionWork(
+                    event.getSession(),
+                    entityName,
+                    getFsmService(),
+                    event.getId(),
+                    event.getPersister(),
+                    oldState,
+                    event.getState()
+            );
+
+            workUnit.perform();
+
+        }
+    }
+
+    private Object[] getOldDBState(FSMProcess fsmProcess, String entityName, PostUpdateEvent event) {
+        return event.getOldState();
+    }
+
+    @Override
+    public void onPostUpdate(PostUpdateEvent postUpdateEvent) {
+
+        onPostUpdateTransitionCheck(postUpdateEvent);
+
+        onPostUpdateValidatorCheck(postUpdateEvent);
+    }
+
+    @Override
+    public boolean requiresPostCommitHanding(EntityPersister entityPersister) {
+        return false;
+    }
 }
 
 
