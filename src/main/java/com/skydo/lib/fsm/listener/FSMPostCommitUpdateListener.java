@@ -2,6 +2,7 @@ package com.skydo.lib.fsm.listener;
 
 import com.skydo.lib.fsm.config.StateValidatorConfig;
 import com.skydo.lib.fsm.internal.synchronization.FSMProcess;
+import com.skydo.lib.fsm.internal.tools.Pair;
 import com.skydo.lib.fsm.servicecontributor.FSMService;
 import org.hibernate.event.spi.PostCommitUpdateEventListener;
 import org.hibernate.event.spi.PostUpdateEvent;
@@ -32,13 +33,13 @@ public class FSMPostCommitUpdateListener extends BaseEventListener implements Po
 
 	private boolean onPostUpdateActionExecutor(PostUpdateEvent postUpdateEvent) {
 		StateValidatorConfig stateValidatorConfig = getFsmService().getStateValidator();
-		HashMap<Class<?>, HashMap<String, HashMap<String, Method>>> entityFieldPostUpdateActionMap
+		HashMap<Class<?>, HashMap<String, HashMap<String, Pair<Object, Method>>>> entityFieldPostUpdateActionMap
 				= stateValidatorConfig.getEntityFieldPostUpdateActionMap();
 
 		Object entity = postUpdateEvent.getEntity();
 
 		Class<? extends Object> entityClass = entity.getClass();
-		HashMap<String, HashMap<String, Method>> fieldToValuesMap = entityFieldPostUpdateActionMap.get(entityClass);
+		HashMap<String, HashMap<String, Pair<Object, Method>>> fieldToValuesMap = entityFieldPostUpdateActionMap.get(entityClass);
 
 		if (entityFieldPostUpdateActionMap.containsKey(entityClass)) {
 			String[] propertyNames = postUpdateEvent.getPersister().getPropertyNames();
@@ -48,28 +49,35 @@ public class FSMPostCommitUpdateListener extends BaseEventListener implements Po
 
 			for(int i = 0 ; i < totalFields ; ++i) {
 				String propertyName = propertyNames[i];
-				Object currentOldValue = oldValues.get(i).toString();
-				Object currentNewValue = newValues.get(i).toString();
-				log.info("Property: " + propertyName + " currentOldValue: " + currentOldValue + " currentNewValue" + currentNewValue);
+				Object currentOldValue = null;
+				if (oldValues.get(i) != null) {
+					currentOldValue = oldValues.get(i).toString();
+				}
+				Object currentNewValue = null;
+				if (newValues.get(i) != null) {
+					currentNewValue = newValues.get(i).toString();
+				}
+				log.info("Property: " + propertyName + " currentOldValue: " + currentOldValue + " currentNewValue: " + currentNewValue);
+				if (currentOldValue == null && currentNewValue == null) {
+					continue;
+				}
 				if (!currentOldValue.equals(currentNewValue)) {
 					log.info("DIFFERENT values");
 					if (fieldToValuesMap.containsKey(propertyName)) {
 						log.info("Yes:: `fieldToValuesMap` contains the property:");
-						HashMap<String, Method> valuesToPostActionMethods = fieldToValuesMap.get(propertyName);
+						HashMap<String, Pair<Object, Method>> valuesToPostActionMethods = fieldToValuesMap.get(propertyName);
 
 						if (valuesToPostActionMethods.containsKey(currentNewValue)) {
 							log.info("Yes:: `valuesToPostActionMethods` contains the currentNewValue: " + currentNewValue);
-							Method postActionMethod = valuesToPostActionMethods.get(currentNewValue);
-							Class<?> declaringClass = postActionMethod.getDeclaringClass();
+							Pair<Object, Method> postActionMethodPair = valuesToPostActionMethods.get(currentNewValue);
 							try {
-								postActionMethod.invoke(
-									// TODO: Is this assumption correct? Accessing constructor at zeroth index?
-									declaringClass.getConstructors()[0].newInstance(),
+								postActionMethodPair.getSecond().invoke(
+									postActionMethodPair.getFirst(),
 									postUpdateEvent.getId(),
 									currentOldValue,
 									currentNewValue
 								);
-							} catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
+							} catch (IllegalAccessException | InvocationTargetException e) {
 								throw new RuntimeException(e);
 							}
 						}

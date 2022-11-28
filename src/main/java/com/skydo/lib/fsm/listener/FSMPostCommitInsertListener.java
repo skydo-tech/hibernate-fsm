@@ -1,6 +1,7 @@
 package com.skydo.lib.fsm.listener;
 
 import com.skydo.lib.fsm.config.StateValidatorConfig;
+import com.skydo.lib.fsm.internal.tools.Pair;
 import com.skydo.lib.fsm.servicecontributor.FSMService;
 import org.hibernate.event.spi.PostCommitInsertEventListener;
 import org.hibernate.event.spi.PostInsertEvent;
@@ -30,13 +31,13 @@ public class FSMPostCommitInsertListener extends BaseEventListener implements Po
 	private boolean onPostCommit(PostInsertEvent postInsertEvent) {
 
 		StateValidatorConfig stateValidatorConfig = getFsmService().getStateValidator();
-		HashMap<Class<?>, HashMap<String, HashMap<String, Method>>> entityFieldPostUpdateActionMap
+		HashMap<Class<?>, HashMap<String, HashMap<String, Pair<Object, Method>>>> entityFieldPostUpdateActionMap
 				= stateValidatorConfig.getEntityFieldPostUpdateActionMap();
 
 		Object entity = postInsertEvent.getEntity();
 
 		Class<? extends Object> entityClass = entity.getClass();
-		HashMap<String, HashMap<String, Method>> fieldToValuesMap = entityFieldPostUpdateActionMap.get(entityClass);
+		HashMap<String, HashMap<String, Pair<Object, Method>>> fieldToValuesMap = entityFieldPostUpdateActionMap.get(entityClass);
 
 		if (entityFieldPostUpdateActionMap.containsKey(entityClass)) {
 			String[] propertyNames = postInsertEvent.getPersister().getPropertyNames();
@@ -48,23 +49,21 @@ public class FSMPostCommitInsertListener extends BaseEventListener implements Po
 				Object currentNewValue = newValues.get(i).toString();
 
 				if (fieldToValuesMap.containsKey(propertyName)) {
-					HashMap<String, Method> valuesToPostActionMethods = fieldToValuesMap.get(propertyName);
+					HashMap<String, Pair<Object, Method>> valuesToPostActionMethods = fieldToValuesMap.get(propertyName);
 
 					if (valuesToPostActionMethods.containsKey(currentNewValue)) {
 						log.info("Yes:: `valuesToPostActionMethods` contains the currentNewValue: " + currentNewValue);
-						Method postActionMethod = valuesToPostActionMethods.get(currentNewValue);
-						Class<?> declaringClass = postActionMethod.getDeclaringClass();
+						Pair<Object, Method> postActionMethodPair = valuesToPostActionMethods.get(currentNewValue);
 						try {
-							postActionMethod.invoke(
-								// TODO: Is this assumption correct? Accessing constructor at zeroth index?
-								declaringClass.getConstructors()[0].newInstance(),
+							postActionMethodPair.getSecond().invoke(
+								postActionMethodPair.getFirst(),
 								postInsertEvent.getId(),
 								// TODO: can we handle this better?
 								//  Old value is empty string
 								"",
 								currentNewValue
 							);
-						} catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
+						} catch (IllegalAccessException | InvocationTargetException e) {
 							throw new RuntimeException(e);
 						}
 					}

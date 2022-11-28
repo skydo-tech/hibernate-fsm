@@ -11,6 +11,7 @@ public class StateValidatorConfig {
 
     public HashMap<Class<?>, HashMap<String, HashMap<String, Pair<Object, Method>>>> getValidatorMap() {
         return SpringConfiguration.entityToFieldMap;
+
     /**
      * e.g. Exporter
        {
@@ -38,9 +39,9 @@ public class StateValidatorConfig {
      */
     }
 
-//    public HashMap<Class<?>, HashMap<String, HashMap<String, Method>>> getEntityFieldPostUpdateActionMap() {
-//        return SpringConfiguration.entityToFieldMap;
-//    }
+    public HashMap<Class<?>, HashMap<String, HashMap<String, Pair<Object, Method>>>> getEntityFieldPostUpdateActionMap() {
+        return SpringConfiguration.entityToPostActionMaps;
+    }
 
     public void createEntityFieldValidatorMap() {
 //        log.info("Creating Entity Field Validator Map");
