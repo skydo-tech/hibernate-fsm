@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.*;
 
 public class FSMPostUpdateListener extends BaseEventListener implements PostUpdateEventListener {
@@ -28,49 +29,34 @@ public class FSMPostUpdateListener extends BaseEventListener implements PostUpda
     private void onPostUpdateValidatorCheck(PostUpdateEvent postUpdateEvent) {
 
         StateValidatorConfig stateValidatorConfig = getFsmService().getStateValidator();
-
-        HashMap<Class<?>, HashMap<String, HashMap<String, Pair<Object, Method>>>> validatorMap = stateValidatorConfig.getValidatorMap();
-
+        HashMap<Class<?>, HashMap<String, HashMap<String, Pair<Object, List<Method>>>>> validatorMap = stateValidatorConfig.getValidatorMap();
         Object entity = postUpdateEvent.getEntity();
         final FSMProcess fsmProcess = getFsmService().getFsmProcessManager().get(postUpdateEvent.getSession());
         Object[] entityOldState = fsmProcess.getCachedEntityState(postUpdateEvent.getId(), postUpdateEvent.getPersister().getEntityName());
-
         Class<? extends Object> entityClass = entity.getClass();
-        HashMap<String, HashMap<String, Pair<Object, Method>>> fieldToValuesMap = validatorMap.get(entityClass);
+        HashMap<String, HashMap<String, Pair<Object, List<Method>>>> fieldToValuesMap = validatorMap.get(entityClass);
 
         if (validatorMap.containsKey(entityClass)) {
             String[] propertyNames = postUpdateEvent.getPersister().getPropertyNames();
-
             int[] dirtyProperties = postUpdateEvent.getDirtyProperties();
-
             for (int propertyIndex : dirtyProperties) {
-
                 String propertyName = propertyNames[propertyIndex];
-
                 if (fieldToValuesMap.containsKey(propertyName)) {
-
                     String newValue = postUpdateEvent.getState()[propertyIndex].toString();
                     String oldValue = entityOldState[propertyIndex].toString();
-
-                    HashMap<String, Pair<Object, Method>> valuesToValidators = fieldToValuesMap.get(propertyName);
-
-                    if (valuesToValidators.containsKey(newValue)) {
-
-                        Pair<Object, Method> validator = valuesToValidators.get(newValue);
-                        try {
-                            validator.getSecond().invoke(validator.getFirst(), postUpdateEvent.getId(), oldValue, newValue);
-                        } catch (IllegalAccessException | InvocationTargetException  e) {
-                            throw new RuntimeException(e);
-                        }
-
+                    HashMap<String, Pair<Object, List<Method>>> valuesToValidators = fieldToValuesMap.get(propertyName);
+                    Pair<Object, List<Method>> validator = valuesToValidators.get(newValue);
+                    if (validator != null && validator.getSecond() != null) {
+                        validator.getSecond().forEach(method -> {
+                            try {
+                                method.invoke(validator.getFirst(), postUpdateEvent.getId(), oldValue, newValue);
+                            } catch (IllegalAccessException | InvocationTargetException  e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
                     }
-
-
                 }
-
-
             }
-
         }
     }
 

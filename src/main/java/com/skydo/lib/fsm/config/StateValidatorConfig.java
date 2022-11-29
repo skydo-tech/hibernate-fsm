@@ -4,12 +4,13 @@ import com.skydo.lib.fsm.internal.tools.Pair;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 
 public class StateValidatorConfig {
 
 //    private final Logger log = LoggerFactory.getLogger(StateValidatorConfig.class.getSimpleName());
 
-    public HashMap<Class<?>, HashMap<String, HashMap<String, Pair<Object, Method>>>> getValidatorMap() {
+    public HashMap<Class<?>, HashMap<String, HashMap<String, Pair<Object, List<Method>>>>> getValidatorMap() {
         return SpringConfiguration.entityToFieldMap;
 
     /**
@@ -39,7 +40,7 @@ public class StateValidatorConfig {
      */
     }
 
-    public HashMap<Class<?>, HashMap<String, HashMap<String, Pair<Object, Method>>>> getEntityFieldPostUpdateActionMap() {
+    public HashMap<Class<?>, HashMap<String, HashMap<String, Pair<Object, List<Method>>>>> getEntityFieldPostUpdateActionMap() {
         return SpringConfiguration.entityToPostActionMaps;
     }
 

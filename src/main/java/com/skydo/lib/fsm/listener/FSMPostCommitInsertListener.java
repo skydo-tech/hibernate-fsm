@@ -31,13 +31,13 @@ public class FSMPostCommitInsertListener extends BaseEventListener implements Po
 	private boolean onPostCommit(PostInsertEvent postInsertEvent) {
 
 		StateValidatorConfig stateValidatorConfig = getFsmService().getStateValidator();
-		HashMap<Class<?>, HashMap<String, HashMap<String, Pair<Object, Method>>>> entityFieldPostUpdateActionMap
+		HashMap<Class<?>, HashMap<String, HashMap<String, Pair<Object, List<Method>>>>> entityFieldPostUpdateActionMap
 				= stateValidatorConfig.getEntityFieldPostUpdateActionMap();
 
 		Object entity = postInsertEvent.getEntity();
 
 		Class<? extends Object> entityClass = entity.getClass();
-		HashMap<String, HashMap<String, Pair<Object, Method>>> fieldToValuesMap = entityFieldPostUpdateActionMap.get(entityClass);
+		HashMap<String, HashMap<String, Pair<Object, List<Method>>>> fieldToValuesMap = entityFieldPostUpdateActionMap.get(entityClass);
 
 		if (entityFieldPostUpdateActionMap.containsKey(entityClass)) {
 			String[] propertyNames = postInsertEvent.getPersister().getPropertyNames();
@@ -46,25 +46,32 @@ public class FSMPostCommitInsertListener extends BaseEventListener implements Po
 
 			for(int i = 0 ; i < totalFields ; ++i) {
 				String propertyName = propertyNames[i];
-				Object currentNewValue = newValues.get(i).toString();
+				Object currentNewValue = null;
+				if (newValues.get(i) != null) {
+					currentNewValue = newValues.get(i).toString();
+				}
 
 				if (fieldToValuesMap.containsKey(propertyName)) {
-					HashMap<String, Pair<Object, Method>> valuesToPostActionMethods = fieldToValuesMap.get(propertyName);
+					HashMap<String, Pair<Object, List<Method>>> valuesToPostActionMethods = fieldToValuesMap.get(propertyName);
 
 					if (valuesToPostActionMethods.containsKey(currentNewValue)) {
-						log.info("Yes:: `valuesToPostActionMethods` contains the currentNewValue: " + currentNewValue);
-						Pair<Object, Method> postActionMethodPair = valuesToPostActionMethods.get(currentNewValue);
-						try {
-							postActionMethodPair.getSecond().invoke(
-								postActionMethodPair.getFirst(),
-								postInsertEvent.getId(),
-								// TODO: can we handle this better?
-								//  Old value is empty string
-								"",
-								currentNewValue
-							);
-						} catch (IllegalAccessException | InvocationTargetException e) {
-							throw new RuntimeException(e);
+						Pair<Object, List<Method>> postActionMethodPair = valuesToPostActionMethods.get(currentNewValue);
+						if (postActionMethodPair != null && postActionMethodPair.getSecond() != null) {
+							Object finalCurrentNewValue = currentNewValue;
+							postActionMethodPair.getSecond().forEach(method -> {
+								try {
+									method.invoke(
+										postActionMethodPair.getFirst(),
+										postInsertEvent.getId(),
+										// TODO: can we handle this better?
+										//  Old value is empty string
+										"",
+										finalCurrentNewValue
+									);
+								} catch (IllegalAccessException | InvocationTargetException e) {
+									throw new RuntimeException(e);
+								}
+							});
 						}
 					}
 				}

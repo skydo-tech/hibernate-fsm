@@ -33,13 +33,13 @@ public class FSMPostCommitUpdateListener extends BaseEventListener implements Po
 
 	private boolean onPostUpdateActionExecutor(PostUpdateEvent postUpdateEvent) {
 		StateValidatorConfig stateValidatorConfig = getFsmService().getStateValidator();
-		HashMap<Class<?>, HashMap<String, HashMap<String, Pair<Object, Method>>>> entityFieldPostUpdateActionMap
-				= stateValidatorConfig.getEntityFieldPostUpdateActionMap();
+		HashMap<Class<?>, HashMap<String, HashMap<String, Pair<Object, List<Method>>>>> entityFieldPostUpdateActionMap
+			= stateValidatorConfig.getEntityFieldPostUpdateActionMap();
 
 		Object entity = postUpdateEvent.getEntity();
 
 		Class<? extends Object> entityClass = entity.getClass();
-		HashMap<String, HashMap<String, Pair<Object, Method>>> fieldToValuesMap = entityFieldPostUpdateActionMap.get(entityClass);
+		HashMap<String, HashMap<String, Pair<Object, List<Method>>>> fieldToValuesMap = entityFieldPostUpdateActionMap.get(entityClass);
 
 		if (entityFieldPostUpdateActionMap.containsKey(entityClass)) {
 			String[] propertyNames = postUpdateEvent.getPersister().getPropertyNames();
@@ -57,28 +57,31 @@ public class FSMPostCommitUpdateListener extends BaseEventListener implements Po
 				if (newValues.get(i) != null) {
 					currentNewValue = newValues.get(i).toString();
 				}
-				log.info("Property: " + propertyName + " currentOldValue: " + currentOldValue + " currentNewValue: " + currentNewValue);
 				if (currentOldValue == null && currentNewValue == null) {
 					continue;
 				}
 				if (!currentOldValue.equals(currentNewValue)) {
-					log.info("DIFFERENT values");
 					if (fieldToValuesMap.containsKey(propertyName)) {
-						log.info("Yes:: `fieldToValuesMap` contains the property:");
-						HashMap<String, Pair<Object, Method>> valuesToPostActionMethods = fieldToValuesMap.get(propertyName);
+						HashMap<String, Pair<Object, List<Method>>> valuesToPostActionMethods = fieldToValuesMap.get(propertyName);
 
 						if (valuesToPostActionMethods.containsKey(currentNewValue)) {
 							log.info("Yes:: `valuesToPostActionMethods` contains the currentNewValue: " + currentNewValue);
-							Pair<Object, Method> postActionMethodPair = valuesToPostActionMethods.get(currentNewValue);
-							try {
-								postActionMethodPair.getSecond().invoke(
-									postActionMethodPair.getFirst(),
-									postUpdateEvent.getId(),
-									currentOldValue,
-									currentNewValue
-								);
-							} catch (IllegalAccessException | InvocationTargetException e) {
-								throw new RuntimeException(e);
+							Pair<Object, List<Method>> postActionMethodPair = valuesToPostActionMethods.get(currentNewValue);
+							if (postActionMethodPair != null && postActionMethodPair.getSecond() != null) {
+								Object finalCurrentNewValue = currentNewValue;
+								Object finalCurrentOldValue = currentOldValue;
+								postActionMethodPair.getSecond().forEach(method -> {
+									try {
+										method.invoke(
+											postActionMethodPair.getFirst(),
+											postUpdateEvent.getId(),
+											finalCurrentOldValue,
+											finalCurrentNewValue
+										);
+									} catch (IllegalAccessException | InvocationTargetException e) {
+										throw new RuntimeException(e);
+									}
+								});
 							}
 						}
 					}
