@@ -65,7 +65,6 @@ public class FSMPostCommitUpdateListener extends BaseEventListener implements Po
 						HashMap<String, Pair<Object, List<Method>>> valuesToPostActionMethods = fieldToValuesMap.get(propertyName);
 
 						if (valuesToPostActionMethods.containsKey(currentNewValue)) {
-							log.info("Yes:: `valuesToPostActionMethods` contains the currentNewValue: " + currentNewValue);
 							Pair<Object, List<Method>> postActionMethodPair = valuesToPostActionMethods.get(currentNewValue);
 							if (postActionMethodPair != null && postActionMethodPair.getSecond() != null) {
 								Object finalCurrentNewValue = currentNewValue;
