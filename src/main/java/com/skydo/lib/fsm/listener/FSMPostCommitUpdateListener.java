@@ -60,7 +60,14 @@ public class FSMPostCommitUpdateListener extends BaseEventListener implements Po
 				if (currentOldValue == null && currentNewValue == null) {
 					continue;
 				}
-				if (!currentOldValue.equals(currentNewValue)) {
+				// oldValue -   newValue  -->     skip/execute `postUpdateAction`
+				// null     -   null      -->     skip
+				// null     -   ABC       -->     execute
+				// ABC      -   null      -->     skip
+				// ABC      -   CBA       -->     execute
+				if (
+					currentOldValue != null && !currentNewValue.equals(currentOldValue)
+				) {
 					if (fieldToValuesMap.containsKey(propertyName)) {
 						HashMap<String, Pair<Object, List<Method>>> valuesToPostActionMethods = fieldToValuesMap.get(propertyName);
 
