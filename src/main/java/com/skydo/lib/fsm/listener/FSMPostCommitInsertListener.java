@@ -69,6 +69,9 @@ public class FSMPostCommitInsertListener extends BaseEventListener implements Po
 										finalCurrentNewValue
 									);
 								} catch (IllegalAccessException | InvocationTargetException e) {
+									log.error(
+										"Something went wrong invoking the post commit action::: " + e.getCause()
+									);
 									throw new RuntimeException(e);
 								}
 							});

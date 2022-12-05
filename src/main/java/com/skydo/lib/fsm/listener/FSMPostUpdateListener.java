@@ -16,7 +16,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.*;
 
 public class FSMPostUpdateListener extends BaseEventListener implements PostUpdateEventListener {
 
@@ -51,6 +50,7 @@ public class FSMPostUpdateListener extends BaseEventListener implements PostUpda
                             try {
                                 method.invoke(validator.getFirst(), postUpdateEvent.getId(), oldValue, newValue);
                             } catch (IllegalAccessException | InvocationTargetException  e) {
+                                log.error("Something went wrong invoking the validator method::: " + e.getCause());
                                 throw new RuntimeException(e);
                             }
                         });
