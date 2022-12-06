@@ -86,9 +86,12 @@ public class FSMPostCommitUpdateListener extends BaseEventListener implements Po
 										);
 									} catch (IllegalAccessException | InvocationTargetException e) {
 										log.error(
-											"Something went wrong invoking the post commit action::: " + e.getCause()
+											"Something went wrong invoking the post commit update action::: "
+												+ e.getCause()
 										);
-										throw new RuntimeException(e);
+										if (!(e instanceof InvocationTargetException)) {
+											throw new RuntimeException(e);
+										}
 									}
 								});
 							}
