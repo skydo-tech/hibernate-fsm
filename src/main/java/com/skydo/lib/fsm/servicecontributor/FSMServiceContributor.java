@@ -1,4 +1,4 @@
-package com.skydo.lib.fsm.internal;
+package com.skydo.lib.fsm.servicecontributor;
 
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.service.spi.ServiceContributor;

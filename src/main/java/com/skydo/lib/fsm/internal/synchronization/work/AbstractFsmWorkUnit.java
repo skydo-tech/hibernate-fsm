@@ -1,6 +1,6 @@
 package com.skydo.lib.fsm.internal.synchronization.work;
 
-import com.skydo.lib.fsm.internal.FSMService;
+import com.skydo.lib.fsm.servicecontributor.FSMService;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.persister.entity.EntityPersister;
 

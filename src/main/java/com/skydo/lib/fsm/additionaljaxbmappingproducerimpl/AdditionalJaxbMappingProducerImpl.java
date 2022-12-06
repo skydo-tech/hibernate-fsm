@@ -1,5 +1,6 @@
-package com.skydo.lib.fsm.internal;
+package com.skydo.lib.fsm.additionaljaxbmappingproducerimpl;
 
+import com.skydo.lib.fsm.servicecontributor.FSMService;
 import org.hibernate.boot.jaxb.internal.MappingBinder;
 import org.hibernate.boot.model.source.internal.hbm.MappingDocument;
 import org.hibernate.boot.spi.AdditionalJaxbMappingProducer;
