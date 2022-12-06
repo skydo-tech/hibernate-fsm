@@ -3,13 +3,12 @@ package com.skydo.lib.fsm.internal.synchronization.work;
 import com.skydo.lib.fsm.exception.StateMachineException;
 import com.skydo.lib.fsm.exception.StateValidationException;
 import com.skydo.lib.fsm.servicecontributor.FSMService;
-import com.skydo.lib.fsm.internal.tools.StateMachine;
+import com.skydo.lib.fsm.definitions.StateMachine;
 import com.skydo.lib.fsm.internal.tools.StateTransition;
 import com.skydo.lib.fsm.internal.tools.StateTransitionVoid;
-import com.skydo.lib.fsm.internal.tools.Transition;
+import com.skydo.lib.fsm.definitions.Transition;
 import org.hibernate.annotations.common.reflection.XProperty;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.mapping.PersistentClass;
 import org.hibernate.persister.entity.EntityPersister;
 
 import java.io.Serializable;

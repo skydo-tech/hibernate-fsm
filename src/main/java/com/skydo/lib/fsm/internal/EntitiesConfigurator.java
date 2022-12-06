@@ -1,6 +1,6 @@
 package com.skydo.lib.fsm.internal;
 
-import com.skydo.lib.fsm.internal.tools.StateMachine;
+import com.skydo.lib.fsm.definitions.StateMachine;
 import org.hibernate.annotations.common.reflection.ReflectionManager;
 import org.hibernate.annotations.common.reflection.XClass;
 import org.hibernate.annotations.common.reflection.XProperty;

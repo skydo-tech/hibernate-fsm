@@ -1,4 +1,7 @@
-package com.skydo.lib.fsm.internal.tools;
+package com.skydo.lib.fsm.definitions;
+
+import com.skydo.lib.fsm.internal.tools.StateTransition;
+import com.skydo.lib.fsm.internal.tools.StateTransitionVoid;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

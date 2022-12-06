@@ -1,4 +1,4 @@
-package com.skydo.lib.fsm.internal.tools;
+package com.skydo.lib.fsm.definitions;
 
 public @interface Transition {
 
