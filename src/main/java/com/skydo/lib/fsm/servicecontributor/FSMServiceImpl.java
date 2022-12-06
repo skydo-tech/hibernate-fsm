@@ -35,12 +35,8 @@ public class FSMServiceImpl implements FSMService, Configurable {
     @Override
     public void initialize(MetadataImplementor metadata) {
 
-        log.info("Initialize called");
-
         this.stateValidatorConfig.createEntityFieldMaps();
-
         this.serviceRegistry = metadata.getMetadataBuildingOptions().getServiceRegistry();
-
         final ReflectionManager reflectionManager = metadata.getMetadataBuildingOptions().getReflectionManager();
 
         this.entitiesConfigurations = new EntitiesConfigurator().configure(
@@ -48,9 +44,7 @@ public class FSMServiceImpl implements FSMService, Configurable {
             serviceRegistry,
             reflectionManager
         );
-
         fsmProcessManager = new FSMProcessManager();
-
         initialized = true;
     }
 

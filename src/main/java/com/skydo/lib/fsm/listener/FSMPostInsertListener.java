@@ -20,7 +20,6 @@ public class FSMPostInsertListener extends BaseEventListener implements PostInse
     @Override
     public void onPostInsert(PostInsertEvent event) {
         final String entityName = event.getPersister().getEntityName();
-        log.info("Inside postInsert event. entityName = " + entityName);
 
         // TODO: Do we need the following line?
         // checkIfTransactionInProgress(event.getSession());

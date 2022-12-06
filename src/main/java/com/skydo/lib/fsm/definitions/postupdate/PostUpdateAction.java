@@ -14,6 +14,10 @@ import java.lang.annotation.Target;
  * While executing this function from this hibernate layer all these values will be passed.
  *
  * `fun postStateActionMethod(entityId: Long, oldFieldValue: Any, newFieldValue: Any)`
+ *
+ * This gets executed on both of the following events (outside of Transaction boundary)
+ * 1. Post Update
+ * 2. Post Insert: For post insert `oldValue` will always be empty (`""`) string
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

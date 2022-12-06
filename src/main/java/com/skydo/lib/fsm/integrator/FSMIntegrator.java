@@ -70,6 +70,11 @@ public class FSMIntegrator implements Integrator {
             new FSMPostCommitUpdateListener(fsmService)
         );
 
+        listenerRegistry.appendListeners(
+            EventType.POST_COMMIT_INSERT,
+            new FSMPostCommitInsertListener(fsmService)
+        );
+
     }
 
     @Override

@@ -6,7 +6,7 @@
 
     <groupId>com.skydo.lib</groupId>
     <artifactId>hibernate-fsm</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.1.0-RELEASE</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
