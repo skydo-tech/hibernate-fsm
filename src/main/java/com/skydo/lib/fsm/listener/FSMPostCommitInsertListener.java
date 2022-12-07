@@ -14,6 +14,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Raj Sheth
@@ -41,7 +42,7 @@ public class FSMPostCommitInsertListener extends BaseEventListener implements Po
 
 		if (entityFieldPostUpdateActionMap.containsKey(entityClass)) {
 			String[] propertyNames = postInsertEvent.getPersister().getPropertyNames();
-			List newValues = Arrays.stream(postInsertEvent.getState()).toList();
+			List newValues = Arrays.stream(postInsertEvent.getState()).collect(Collectors.toList());
 			int totalFields = newValues.size();
 
 			for(int i = 0 ; i < totalFields ; ++i) {

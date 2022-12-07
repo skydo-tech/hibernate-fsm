@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SpringConfiguration implements BeanPostProcessor {
 
@@ -41,7 +42,7 @@ public class SpringConfiguration implements BeanPostProcessor {
             HashMap<String, Pair<Object, List<Method>>> valuesToValidators = fieldToValuesMap.get(entityField);
             List<Method> validatorMethods = Arrays.stream(bean.getClass().getMethods()).filter(
                 f -> f.isAnnotationPresent(TransitionValidator.class)
-            ).toList();
+            ).collect(Collectors.toList());
             validatorMethods.forEach(method -> {
                 TransitionValidator transitionValidator = method.getAnnotation(TransitionValidator.class);
                 String state = transitionValidator.state();
@@ -80,7 +81,7 @@ public class SpringConfiguration implements BeanPostProcessor {
             HashMap<String, Pair<Object, List<Method>>> valuesToPostCommitActions = fieldToValuesMap.get(entityField);
             List<Method> postCommitActionMethods = Arrays.stream(bean.getClass().getMethods()).filter(
                 f -> f.isAnnotationPresent(PostUpdateAction.class)
-            ).toList();
+            ).collect(Collectors.toList());
             postCommitActionMethods.forEach(method -> {
                 PostUpdateAction postUpdateAction = method.getAnnotation(PostUpdateAction.class);
                 String state = postUpdateAction.state();

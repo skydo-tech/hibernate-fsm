@@ -10,11 +10,13 @@ import org.hibernate.persister.entity.EntityPersister;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Raj Sheth
@@ -43,8 +45,9 @@ public class FSMPostCommitUpdateListener extends BaseEventListener implements Po
 
 		if (entityFieldPostUpdateActionMap.containsKey(entityClass)) {
 			String[] propertyNames = postUpdateEvent.getPersister().getPropertyNames();
-			List oldValues = Arrays.stream(postUpdateEvent.getOldState()).toList();
-			List newValues = Arrays.stream(postUpdateEvent.getState()).toList();
+//			Arrays.stream(new int[](1,2,3)).
+			List oldValues = Arrays.stream(postUpdateEvent.getOldState()).collect(Collectors.toList());
+			List newValues = Arrays.stream(postUpdateEvent.getState()).collect(Collectors.toList());
 			int totalFields = oldValues.size();
 
 			for(int i = 0 ; i < totalFields ; ++i) {
