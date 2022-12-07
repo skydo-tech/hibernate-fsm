@@ -7,12 +7,15 @@
     <groupId>com.skydo.lib</groupId>
     <artifactId>hibernate-fsm</artifactId>
     <version>0.1.0-RELEASE</version>
+    <name>Finite State Machine using Hibernate</name>
+    <packaging>jar</packaging>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <spring.version>5.2.3.RELEASE</spring.version>
         <spring.boot.version>2.1.4.RELEASE</spring.boot.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
@@ -83,21 +86,19 @@
             <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
-    <!--    https://github.com/skydo-tech/dlock-->
     <scm>
-        <connection>scm:git:git://github.com/skydo-tech/dlock.git</connection>
-        <developerConnection>scm:git:git@github.com:skydo-tech/dlock.git</developerConnection>
-        <url>https://github.com/skydo-tech/dlock</url>
+        <connection>scm:git:git://github.com/skydo-tech/finite-state-machine-hibernate.git</connection>
+        <developerConnection>scm:git:git@github.com:skydo-tech/finite-state-machine-hibernate.git</developerConnection>
+        <url>https://github.com/skydo-tech/finite-state-machine-hibernate</url>
         <tag>HEAD</tag>
     </scm>
 
-    <!--    <name>Distributed Lock Java</name>-->
-    <description>Configurable database to manage locks. Default using RedisLockRegistry</description>
-    <url>https://github.com/skydo-tech/dlock</url>
+    <description>A layer on top of Hibernate which adheres finite state machine over each db commit</description>
+    <url>https://github.com/skydo-tech/finite-state-machine-hibernate</url>
     <licenses>
         <license>
             <name>MIT License</name>
-            <url>https://github.com/skydo-tech/dlock/blob/main/LICENSE</url>
+            <url>https://github.com/skydo-tech/finite-state-machine-hibernate/blob/main/LICENSE</url>
         </license>
     </licenses>
     <developers>
