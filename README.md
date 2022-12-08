@@ -10,6 +10,29 @@ It prevents invalid state transitions before saving it to the database so at the
 ## Prerequisites:
 Finite State Machine [wiki](https://en.wikipedia.org/wiki/Finite-state_machine)
 
+## Installation:
+
+### Maven
+Add following code snippet inside `<dependencies>` of your `pom.xml` file.
+
+```xml
+<dependency>
+    <groupId>com.skydo.lib</groupId>
+    <artifactId>hibernate-fsm</artifactId>
+    <version>0.1.0-RELEASE</version>
+</dependency>
+```
+
+### Gradle
+Add following line
+
+```groovy
+dependency {
+    implementation 'com.skydo.lib.hibernate-fsm:0.1.0-RELEASE'
+}
+```
+
+
 ## Example
 ![Finite State Machine](finite-state-machine@2x.png)
 
@@ -204,3 +227,6 @@ public class UserStatePostCommitActions {
 3. function annotated with `@TransitionValidator` gets executed, if it throws exception, transaction is rolled back.
 4. `transaction` is finally committed.
 5. function annotated with `@PostUpdateAction` gets executed, if it throws exception, transaction is **NOT** rolled back.
+
+## Limitation:
+This library only support spring boot as of now, PRs are always welcome. Contact contributors to discuss the reasons.
