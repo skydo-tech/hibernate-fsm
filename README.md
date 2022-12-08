@@ -1,8 +1,8 @@
 # hibernate-fsm
 
-A layer on top of hIbernate which adheres configurable finite state machine. Prevents dirty commits which violates transitions.
+A layer on top of hibernate which adheres configurable finite state machine. Prevents dirty commits which violates transitions.
 
-When you have to apply some business logic can that be converted to finite state machine, `hiberante-fsm` helps you achieve it.
+When you have to apply some business logic that can be converted to finite state machine, `hiberante-fsm` helps you achieve it.
 It prevents invalid state transitions before saving it to the database so at the application level you don't have to worry about it.
 
 ---
@@ -29,6 +29,9 @@ E.g.: For a `User` entity, there is a column `userState`.
 - This is how java code will look like for the said FSM.
 
 ```java
+import com.skydo.lib.fsm.definitions.StateMachine;
+import com.skydo.lib.fsm.definitions.Transition;
+
 @Entity(name = "user")
 public class User {
 
