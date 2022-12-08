@@ -1,7 +1,7 @@
 # hibernate-fsm
 
-When you have to apply some business logic can be converts to finite state machine, `hiberante-fsm` helps you achieve it.
-It prevents invalid state transitions before saving it to the database so at application level you don't have to worry about.
+When you have to apply some business logic that can be converted to finite state machine, `hiberante-fsm` helps you achieve it.
+It prevents invalid state transitions before saving it to the database so at the application level you don't have to worry about it.
 ---
 
 ## Prerequisites:
