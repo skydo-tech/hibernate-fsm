@@ -1,7 +1,10 @@
 # hibernate-fsm
 
+A layer on top of hIbernate which adheres configurable finite state machine. Prevents dirty commits which violates transitions.
+
 When you have to apply some business logic can be converts to finite state machine, `hiberante-fsm` helps you achieve it.
 It prevents invalid state transitions before saving it to the database so at application level you don't have to worry about.
+
 ---
 
 ## Prerequisites:
