@@ -1,7 +1,7 @@
 # hibernate-fsm
 
-When you have to apply some business logic which can be converted to finite state machine, `hiberante-fsm` helps you achieve it.
-It prevents invalid state transitions before saving it to the database so at the application level you don't have to worry about it.
+When you have to apply some business logic can be converts to finite state machine, `hiberante-fsm` helps you achieve it.
+It prevents invalid state transitions before saving it to the database so at application level you don't have to worry about.
 ---
 
 ## Prerequisites:
@@ -14,15 +14,15 @@ E.g.: For a `User` entity, there is a column `userState`.
 - The possible values of `userState` are `"A", "B", "C", "D", "E"` (finite number of states)
 - Initial state: `"A"`
 - Valid transitions:
-1. A &rarr; B
-2. A &rarr; C
-3. B &rarr; C
-4. B &rarr; D
-5. C &rarr; E
-6. E &rarr; D
+    1. A &rarr; B
+    2. A &rarr; C
+    3. B &rarr; C
+    4. B &rarr; D
+    5. C &rarr; E
+    6. E &rarr; D
 - Invalid transitions:
-1. A &rarr; D
-2. C &rarr; B
+    1. A &rarr; D
+    2. C &rarr; B
 - This is how java code will look like for the said FSM.
 
 ```java
@@ -165,6 +165,7 @@ public class UserStatePostCommitActions {
 	private static final Logger log = Logger.getLogger(UserStateValidator.class.getSimpleName());
 
 	/**
+	 * Assumption: transition is already a valid transition and post that this validator is executed.
 	 *
 	 * @param id `id` is user id. can be used to query other tables.
 	 * @param oldState
@@ -178,7 +179,7 @@ public class UserStatePostCommitActions {
 	)
 	public void postUpdateActionOnStateB(Long id, Object oldState, Object newState) {
 		log.info("postUpdateActionOnStateB called. id: " + id + " " + oldState + ", newState: " + newState);
-		// Add any side effects here
+		// Add any side effect functions here
         // e.g. Send Email / Notification
 	}
 }
