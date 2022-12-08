@@ -73,7 +73,7 @@ Following checks are done on `userState`, before committing to the database:
 
 If checks are passed then transaction is allowed to commit, otherwise the libary raises [`StateValidationException`](src/main/java/com/skydo/lib/fsm/exception/StateValidationException.java)
 
-## More features
+## Features
 
 ### 1. Validators:
 
@@ -84,8 +84,6 @@ These validations can be anything like: querying other table `payment`, if the u
 then only allow user to move to state from `A` &rarr; `B`
 To achieve this, create a `@Component` (must), wrap it with annotation
 [`@TransitionValidatorHandler`](src/main/java/com/skydo/lib/fsm/definitions/validator/TransitionValidatorHandler.java), declare validation function inside this class and annotate this method with [`@TransitionValidator`](src/main/java/com/skydo/lib/fsm/definitions/validator/TransitionValidator.java)
-
-**This validator is executed only after library has already confirmed that the transition is a valid transition.**
 
 #### Example
 
@@ -101,7 +99,7 @@ import com.skydo.lib.fsm.exception.StateValidationException;
      */
     entity = User.class,
     /**
-     * As java doesn't support annotation values at compile time,
+     * As java doesn't support annotation values at run time,
      * we must pass field name in form of string, on which we have applied `@StateMachine` annotation.
      */
     field = "userState"
@@ -139,6 +137,14 @@ public class UserStateValidator {
 	}
 }
 ```
+### Order of execution:
+
+1. `userRepository.save(newUpdateUser);`
+2. `hibernate-fsm` checks if it is a valid transition, in case of invalid it throws exception and transaction is rolled back,
+3. function annotated with `@TransitionValidator` gets executed, if it throws exception, transaction is rolled back.
+4. `transaction` is finally committed.
+
+**This validator is executed only after library has already confirmed that the transition is a valid transition.**
 
 
 ### 2. Post Commit Actions:
@@ -161,7 +167,7 @@ import com.skydo.lib.fsm.definitions.postupdate.PostUpdateActionHandler;
      */
     entity = User.class,
     /**
-     * As java doesn't support annotation values at compile time,
+     * As java doesn't support annotation values at run time,
      * we must pass field name in form of string, on which we have applied `@StateMachine` annotation.
      */
     field = "userState"
@@ -190,4 +196,11 @@ public class UserStatePostCommitActions {
 	}
 }
 ```
+### Order of execution:
 
+1. `userRepository.save(newUpdateUser);`
+2. `hibernate-fsm` checks if it is a valid transition, in case of invalid it throws exception 
+    and transaction is rolled back,
+3. function annotated with `@TransitionValidator` gets executed, if it throws exception, transaction is rolled back.
+4. `transaction` is finally committed.
+5. function annotated with `@PostUpdateAction` gets executed, if it throws exception, transaction is **NOT** rolled back.

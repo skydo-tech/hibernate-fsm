@@ -1,9 +1,3 @@
-## Class and their Responsibilities
-### 1. StateValidatorConfig
-Stores `entityFieldValidatorMap` and `entityFieldPostUpdateActionMap` in the memory.
-These maps are fired up once a application boots up.
-To understand the map skeleton, have a look at the code comment of `src/main/java/com/skydo/lib/fsm/config/StateValidatorConfig.java`
-
 ## Annotations
 
 ### 1. StateMachine
