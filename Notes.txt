@@ -1,3 +1,0 @@
-Way Ahead
-
-1. State Transition Config
