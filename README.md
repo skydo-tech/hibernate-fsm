@@ -5,6 +5,11 @@ A layer on top of hibernate which adheres configurable finite state machine. Pre
 When you have to apply some business logic that can be converted to finite state machine, `hiberante-fsm` helps you achieve it.
 It prevents invalid state transitions before saving it to the database so at the application level you don't have to worry about it.
 
+1. Implement state machines over any entity field in your spring boot app with a simple configuration
+2. Prevent faulty transitions which are not part of state machine (adhering db transaction boundary)
+3. Add additional validators (on top of normal checks)
+4. Run side-effects after successful transactions
+
 ---
 
 ## Prerequisites:
