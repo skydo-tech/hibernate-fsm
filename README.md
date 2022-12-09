@@ -1,4 +1,4 @@
-# hibernate-fsm
+# Hibernate Finite State Machine
 
 A layer on top of hibernate which adheres configurable finite state machine. Prevents dirty commits which violates transitions.
 
