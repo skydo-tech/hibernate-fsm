@@ -237,4 +237,4 @@ public class UserStatePostCommitActions {
 This library only support spring boot as of now, PRs are always welcome. Contact contributors to discuss the reasons.
 
 ## Contact us
-Reach out to [@r1jsheth](rajpsheth@gmail.com), [nineteen94](vishal@skydo.com)
+Reach out to [@r1jsheth](mailto:rajpsheth@gmail.com), [nineteen94](mailto:vishal@skydo.com)
