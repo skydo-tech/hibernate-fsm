@@ -4,6 +4,7 @@ import com.skydo.lib.fsm.config.StateValidatorConfig;
 import com.skydo.lib.fsm.internal.synchronization.FSMProcess;
 import com.skydo.lib.fsm.internal.tools.Pair;
 import com.skydo.lib.fsm.servicecontributor.FSMService;
+import org.hibernate.FlushMode;
 import org.hibernate.event.spi.PreUpdateEvent;
 import org.hibernate.event.spi.PreUpdateEventListener;
 import org.slf4j.Logger;
@@ -22,7 +23,8 @@ public class FSMPreUpdateListener extends BaseEventListener implements PreUpdate
     }
 
     private void onPostUpdateValidatorCheck(PreUpdateEvent postUpdateEvent) {
-
+        FlushMode originalFlushMode = postUpdateEvent.getSession().getHibernateFlushMode();
+        postUpdateEvent.getSession().setHibernateFlushMode(FlushMode.COMMIT);
         StateValidatorConfig stateValidatorConfig = getFsmService().getStateValidator();
         HashMap<Class<?>, HashMap<String, HashMap<String, Pair<Object, List<Method>>>>> validatorMap = stateValidatorConfig.getValidatorMap();
         Object entity = postUpdateEvent.getEntity();
@@ -54,6 +56,7 @@ public class FSMPreUpdateListener extends BaseEventListener implements PreUpdate
                 }
             }
         }
+        postUpdateEvent.getSession().setHibernateFlushMode(originalFlushMode);
     }
 
     private Object[] getOldDBState(FSMProcess fsmProcess, String entityName, PreUpdateEvent event) {
