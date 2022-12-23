@@ -6,7 +6,7 @@
 
     <groupId>com.skydo.lib</groupId>
     <artifactId>hibernate-fsm</artifactId>
-    <version>0.1.0-RELEASE</version>
+    <version>0.1.1-RELEASE</version>
     <name>Finite State Machine using Hibernate</name>
     <packaging>jar</packaging>
 
