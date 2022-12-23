@@ -95,7 +95,7 @@ public class FSMPostUpdateListener extends BaseEventListener implements PostUpda
 
         onPostUpdateTransitionCheck(postUpdateEvent);
 
-        onPostUpdateValidatorCheck(postUpdateEvent);
+//        onPostUpdateValidatorCheck(postUpdateEvent);
     }
 
     @Override
