@@ -1,5 +1,7 @@
 package com.skydo.lib.fsm.internal.synchronization;
 
+import com.skydo.lib.fsm.servicecontributor.FSMService;
+import com.skydo.lib.fsm.servicecontributor.FSMServiceImpl;
 import org.hibernate.Transaction;
 import org.hibernate.action.spi.AfterTransactionCompletionProcess;
 import org.hibernate.action.spi.BeforeTransactionCompletionProcess;
@@ -13,9 +15,11 @@ import java.util.Map;
 public class FSMProcessManager {
 
     private final Map<Transaction, FSMProcess> fsmProcessesList;
+    public final FSMService fsmService;
 
-    public FSMProcessManager() {
+    public FSMProcessManager(FSMServiceImpl fsmService) {
         this.fsmProcessesList = new HashMap<>();
+        this.fsmService = fsmService;
     }
 
     public FSMProcess get(EventSource session) {
@@ -24,7 +28,7 @@ public class FSMProcessManager {
         FSMProcess fsmProcess = fsmProcessesList.get( transaction );
         if ( fsmProcess == null ) {
             // No worries about registering a transaction twice - a transaction is single thread
-            fsmProcess = new FSMProcess( session );
+            fsmProcess = new FSMProcess( session, this.fsmService );
             fsmProcessesList.put( transaction, fsmProcess );
 
             session.getActionQueue().registerProcess(

@@ -44,7 +44,7 @@ public class FSMServiceImpl implements FSMService, Configurable {
             serviceRegistry,
             reflectionManager
         );
-        fsmProcessManager = new FSMProcessManager();
+        fsmProcessManager = new FSMProcessManager(this);
         initialized = true;
     }
 

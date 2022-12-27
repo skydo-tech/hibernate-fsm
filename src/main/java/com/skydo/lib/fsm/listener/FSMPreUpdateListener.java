@@ -72,10 +72,11 @@ public class FSMPreUpdateListener extends BaseEventListener implements PreUpdate
 
             Object[] currentState = event.getPersister().getDatabaseSnapshot(event.getId(), event.getSession());
 
-//            final FSMProcess fsmProcess = getFsmService().getFsmProcessManager().get(event.getSession());
+            final FSMProcess fsmProcess = getFsmService().getFsmProcessManager().get(event.getSession());
 //            fsmProcess.cacheEntityState(event.getId(), entityName, currentState);
+            fsmProcess.cacheEvent(event);
         }
-        onPostUpdateValidatorCheck(event);
+//        onPostUpdateValidatorCheck(event);
 
         return false;
     }
