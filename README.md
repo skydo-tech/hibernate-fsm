@@ -24,7 +24,7 @@ Add following code snippet inside `<dependencies>` of your `pom.xml` file.
 <dependency>
     <groupId>com.skydo.lib</groupId>
     <artifactId>hibernate-fsm</artifactId>
-    <version>0.1.2-RELEASE</version>
+    <version>0.1.3-RELEASE</version>
 </dependency>
 ```
 
