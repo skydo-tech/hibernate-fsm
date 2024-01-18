@@ -9,10 +9,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class SpringConfiguration implements BeanPostProcessor {
@@ -22,6 +19,9 @@ public class SpringConfiguration implements BeanPostProcessor {
 
     final static HashMap<Class<?>, HashMap<String, HashMap<String, Pair<Object, List<Method>>>>> entityToPostActionMaps
         = new HashMap<>();
+
+    final static HashMap<Class<?>, HashMap<String, Pair<Object, List<Method>>>> entityToPostActionMapsGeneric
+            = new HashMap<>();
 
     private void processTransitionValidator(Object bean, String beanName) {
         if (bean.getClass().isAnnotationPresent(TransitionValidatorHandler.class)) {
@@ -85,16 +85,34 @@ public class SpringConfiguration implements BeanPostProcessor {
             postCommitActionMethods.forEach(method -> {
                 PostUpdateAction postUpdateAction = method.getAnnotation(PostUpdateAction.class);
                 String state = postUpdateAction.state();
-                if (valuesToPostCommitActions.containsKey(state)) {
-                    Pair<Object, List<Method>> currentMethodsObjectPair = valuesToPostCommitActions.get(state);
-                    List<Method> methodsSoFar = currentMethodsObjectPair.getSecond();
-                    methodsSoFar.add(method);
-                    valuesToPostCommitActions.remove(state);
-                    valuesToPostCommitActions.put(state, Pair.make(bean, methodsSoFar));
+                if (state.equals("*")) {
+                    if (!entityToPostActionMapsGeneric.containsKey(entityClass)) {
+                        entityToPostActionMapsGeneric.put(entityClass, new HashMap<>());
+                    }
+                    HashMap<String, Pair<Object, List<Method>>> fieldToActionsMap = entityToPostActionMapsGeneric.get(entityClass);
+                    if (!fieldToActionsMap.containsKey(entityField)) {
+                        List<Method> methods = new ArrayList<Method>();
+                        methods.add(method);
+                        fieldToActionsMap.put(entityField, Pair.make(bean, methods));
+                    } else {
+                        Pair<Object, List<Method>> currentMethodsObjectPair = fieldToActionsMap.get(entityField);
+                        List<Method> methodsSoFar = currentMethodsObjectPair.getSecond();
+                        methodsSoFar.add(method);
+                        fieldToActionsMap.remove(entityField);
+                        fieldToActionsMap.put(entityField, Pair.make(bean, methodsSoFar));
+                    }
                 } else {
-                    List<Method> methods = new ArrayList<Method>();
-                    methods.add(method);
-                    valuesToPostCommitActions.put(state, Pair.make(bean, methods));
+                    if (valuesToPostCommitActions.containsKey(state)) {
+                        Pair<Object, List<Method>> currentMethodsObjectPair = valuesToPostCommitActions.get(state);
+                        List<Method> methodsSoFar = currentMethodsObjectPair.getSecond();
+                        methodsSoFar.add(method);
+                        valuesToPostCommitActions.remove(state);
+                        valuesToPostCommitActions.put(state, Pair.make(bean, methodsSoFar));
+                    } else {
+                        List<Method> methods = new ArrayList<Method>();
+                        methods.add(method);
+                        valuesToPostCommitActions.put(state, Pair.make(bean, methods));
+                    }
                 }
             });
         }

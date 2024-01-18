@@ -44,6 +44,10 @@ public class StateValidatorConfig {
         return SpringConfiguration.entityToPostActionMaps;
     }
 
+    public HashMap<Class<?>, HashMap<String, Pair<Object, List<Method>>>> getEntityFieldPostUpdateActionMapGeneric() {
+        return SpringConfiguration.entityToPostActionMapsGeneric;
+    }
+
     public void createEntityFieldValidatorMap() {}
 
     public void createEntityFieldPostActionMap() {}
