@@ -23,6 +23,8 @@ public class SpringConfiguration implements BeanPostProcessor {
     final static HashMap<Class<?>, HashMap<String, Pair<Object, List<Method>>>> entityToPostActionMapsGeneric
             = new HashMap<>();
 
+    final static String GENERIC_FIELD_ACCEPTOR = "*";
+
     private void processTransitionValidator(Object bean, String beanName) {
         if (bean.getClass().isAnnotationPresent(TransitionValidatorHandler.class)) {
             TransitionValidatorHandler transitionValidatorHandler = bean.getClass().getAnnotation(
@@ -85,7 +87,7 @@ public class SpringConfiguration implements BeanPostProcessor {
             postCommitActionMethods.forEach(method -> {
                 PostUpdateAction postUpdateAction = method.getAnnotation(PostUpdateAction.class);
                 String state = postUpdateAction.state();
-                if (state.equals("*")) {
+                if (state.equals(GENERIC_FIELD_ACCEPTOR)) {
                     if (!entityToPostActionMapsGeneric.containsKey(entityClass)) {
                         entityToPostActionMapsGeneric.put(entityClass, new HashMap<>());
                     }
