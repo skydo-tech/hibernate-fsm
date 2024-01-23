@@ -222,6 +222,18 @@ public class UserStatePostCommitActions {
 		// Add any side effect functions here
         // e.g. Send Email / Notification
 	}
+
+    @PostUpdateAction(
+        /**
+         * This function is executed on all state changes of field userState.
+         */
+        state = "*"
+    )
+    public void postUpdateActionGeneric(Long id, Object oldState, Object newState) {
+        log.info("postUpdateActionGeneric called. id: " + id + " " + oldState + ", newState: " + newState);
+		// Add any side effect functions here
+		// e.g. Send Email / Notification
+    }
 }
 ```
 ### Order of execution:

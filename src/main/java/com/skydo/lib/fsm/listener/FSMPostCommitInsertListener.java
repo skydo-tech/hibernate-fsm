@@ -35,12 +35,16 @@ public class FSMPostCommitInsertListener extends BaseEventListener implements Po
 		HashMap<Class<?>, HashMap<String, HashMap<String, Pair<Object, List<Method>>>>> entityFieldPostUpdateActionMap
 				= stateValidatorConfig.getEntityFieldPostUpdateActionMap();
 
+		HashMap<Class<?>, HashMap<String, Pair<Object, List<Method>>>> entityFieldPostUpdateActionMapGeneric
+				= stateValidatorConfig.getEntityFieldPostUpdateActionMapGeneric();
+
 		Object entity = postInsertEvent.getEntity();
 
 		Class<? extends Object> entityClass = entity.getClass();
 		HashMap<String, HashMap<String, Pair<Object, List<Method>>>> fieldToValuesMap = entityFieldPostUpdateActionMap.get(entityClass);
+		HashMap<String, Pair<Object, List<Method>>> fieldToValuesMapGeneric = entityFieldPostUpdateActionMapGeneric.get(entityClass);
 
-		if (entityFieldPostUpdateActionMap.containsKey(entityClass)) {
+		if (entityFieldPostUpdateActionMap.containsKey(entityClass) || entityFieldPostUpdateActionMapGeneric.containsKey(entityClass)) {
 			String[] propertyNames = postInsertEvent.getPersister().getPropertyNames();
 			List newValues = Arrays.stream(postInsertEvent.getState()).collect(Collectors.toList());
 			int totalFields = newValues.size();
@@ -51,27 +55,57 @@ public class FSMPostCommitInsertListener extends BaseEventListener implements Po
 				if (newValues.get(i) != null) {
 					currentNewValue = newValues.get(i).toString();
 				}
+				if (entityFieldPostUpdateActionMap.containsKey(entityClass)) {
+					if (fieldToValuesMap.containsKey(propertyName)) {
+						HashMap<String, Pair<Object, List<Method>>> valuesToPostActionMethods = fieldToValuesMap.get(propertyName);
 
-				if (fieldToValuesMap.containsKey(propertyName)) {
-					HashMap<String, Pair<Object, List<Method>>> valuesToPostActionMethods = fieldToValuesMap.get(propertyName);
+						if (valuesToPostActionMethods.containsKey(currentNewValue)) {
+							Pair<Object, List<Method>> postActionMethodPair = valuesToPostActionMethods.get(currentNewValue);
+							if (postActionMethodPair != null && postActionMethodPair.getSecond() != null) {
+								Object finalCurrentNewValue = currentNewValue;
+								postActionMethodPair.getSecond().forEach(method -> {
+									try {
+										method.invoke(
+												postActionMethodPair.getFirst(),
+												postInsertEvent.getId(),
+												// TODO: can we handle this better?
+												//  Old value is empty string
+												"",
+												finalCurrentNewValue
+										);
+									} catch (IllegalAccessException | InvocationTargetException e) {
+										log.error(
+												"Something went wrong invoking the post commit insert action::: " + e.getCause()
+										);
+										if (!(e instanceof InvocationTargetException)) {
+											throw new RuntimeException(e);
+										}
+									}
+								});
+							}
+						}
+					}
+				}
 
-					if (valuesToPostActionMethods.containsKey(currentNewValue)) {
-						Pair<Object, List<Method>> postActionMethodPair = valuesToPostActionMethods.get(currentNewValue);
+				if (entityFieldPostUpdateActionMapGeneric.containsKey(entityClass)) {
+					if (fieldToValuesMapGeneric.containsKey(propertyName)) {
+						Pair<Object, List<Method>> postActionMethodPair = fieldToValuesMapGeneric.get(propertyName);
+
 						if (postActionMethodPair != null && postActionMethodPair.getSecond() != null) {
 							Object finalCurrentNewValue = currentNewValue;
 							postActionMethodPair.getSecond().forEach(method -> {
 								try {
 									method.invoke(
-										postActionMethodPair.getFirst(),
-										postInsertEvent.getId(),
-										// TODO: can we handle this better?
-										//  Old value is empty string
-										"",
-										finalCurrentNewValue
+											postActionMethodPair.getFirst(),
+											postInsertEvent.getId(),
+											// TODO: can we handle this better?
+											//  Old value is empty string
+											"",
+											finalCurrentNewValue
 									);
 								} catch (IllegalAccessException | InvocationTargetException e) {
 									log.error(
-										"Something went wrong invoking the post commit insert action::: " + e.getCause()
+											"Something went wrong invoking the post commit insert action::: " + e.getCause()
 									);
 									if (!(e instanceof InvocationTargetException)) {
 										throw new RuntimeException(e);
