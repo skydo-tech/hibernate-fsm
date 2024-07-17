@@ -71,8 +71,10 @@ public class FSMPostCommitInsertListener extends BaseEventListener implements Po
 											method.invoke(
 													postActionMethodPair.getFirst(),
 													postInsertEvent.getId(),
-													// TODO: can we handle this better?
-													//  Old value is empty string
+													 /*
+													  * TODO: can we handle this better?
+													  * Old value is empty string
+													  */
 													"",
 													finalCurrentNewValue
 											);
