@@ -35,7 +35,7 @@ public class FSMPostCommitUpdateListener extends BaseEventListener implements Po
 
 	private boolean onPostUpdateActionExecutor(PostUpdateEvent postUpdateEvent) {
 		StateValidatorConfig stateValidatorConfig = getFsmService().getStateValidator();
-		HashMap<Class<?>, HashMap<String, HashMap<String, Pair<Object, List<Method>>>>> entityFieldPostUpdateActionMap
+		HashMap<Class<?>, HashMap<String, HashMap<String, List<Pair<Object, List<Method>>>>>> entityFieldPostUpdateActionMap
 			= stateValidatorConfig.getEntityFieldPostUpdateActionMap();
 
 		HashMap<Class<?>, HashMap<String, Pair<Object, List<Method>>>> entityFieldPostUpdateActionMapGeneric
@@ -44,7 +44,7 @@ public class FSMPostCommitUpdateListener extends BaseEventListener implements Po
 		Object entity = postUpdateEvent.getEntity();
 
 		Class<? extends Object> entityClass = entity.getClass();
-		HashMap<String, HashMap<String, Pair<Object, List<Method>>>> fieldToValuesMap = entityFieldPostUpdateActionMap.get(entityClass);
+		HashMap<String, HashMap<String, List<Pair<Object, List<Method>>>>> fieldToValuesMap = entityFieldPostUpdateActionMap.get(entityClass);
 		HashMap<String, Pair<Object, List<Method>>> fieldToValuesMapGeneric = entityFieldPostUpdateActionMapGeneric.get(entityClass);
 
 		if (entityFieldPostUpdateActionMap.containsKey(entityClass) || entityFieldPostUpdateActionMapGeneric.containsKey(entityClass)) {
@@ -56,15 +56,19 @@ public class FSMPostCommitUpdateListener extends BaseEventListener implements Po
 
 			for(int i = 0 ; i < totalFields ; ++i) {
 				String propertyName = propertyNames[i];
-				Object currentOldValue = null;
+				Object currentOldValue;
 				if (oldValues.get(i) != null) {
 					currentOldValue = oldValues.get(i).toString();
-				}
-				Object currentNewValue = null;
+				} else {
+                    currentOldValue = null;
+                }
+                Object currentNewValue;
 				if (newValues.get(i) != null) {
 					currentNewValue = newValues.get(i).toString();
-				}
-				if (currentOldValue == null && currentNewValue == null) {
+				} else {
+                    currentNewValue = null;
+                }
+                if (currentOldValue == null && currentNewValue == null) {
 					continue;
 				}
 				// oldValue -   newValue  -->     skip/execute `postUpdateAction`
@@ -77,32 +81,35 @@ public class FSMPostCommitUpdateListener extends BaseEventListener implements Po
 				) {
 					if (entityFieldPostUpdateActionMap.containsKey(entityClass)) {
 						if (fieldToValuesMap.containsKey(propertyName)) {
-							HashMap<String, Pair<Object, List<Method>>> valuesToPostActionMethods = fieldToValuesMap.get(propertyName);
+							HashMap<String, List<Pair<Object, List<Method>>>> valuesToPostActionMethods = fieldToValuesMap.get(propertyName);
 
 							if (valuesToPostActionMethods.containsKey(currentNewValue)) {
-								Pair<Object, List<Method>> postActionMethodPair = valuesToPostActionMethods.get(currentNewValue);
-								if (postActionMethodPair != null && postActionMethodPair.getSecond() != null) {
-									Object finalCurrentNewValue = currentNewValue;
-									Object finalCurrentOldValue = currentOldValue;
-									postActionMethodPair.getSecond().forEach(method -> {
-										try {
-											method.invoke(
-													postActionMethodPair.getFirst(),
-													postUpdateEvent.getId(),
-													finalCurrentOldValue,
-													finalCurrentNewValue
-											);
-										} catch (IllegalAccessException | InvocationTargetException e) {
-											log.error(
-													"Something went wrong invoking the post commit update action::: "
-															+ e.getCause()
-											);
-											if (!(e instanceof InvocationTargetException)) {
-												throw new RuntimeException(e);
+								List<Pair<Object, List<Method>>> postActionMethodPairList = valuesToPostActionMethods.get(currentNewValue);
+								postActionMethodPairList.forEach(postActionMethodPair -> {
+									if (postActionMethodPair != null && postActionMethodPair.getSecond() != null) {
+										Object finalCurrentNewValue = currentNewValue;
+										Object finalCurrentOldValue = currentOldValue;
+										postActionMethodPair.getSecond().forEach(method -> {
+											try {
+												method.invoke(
+														postActionMethodPair.getFirst(),
+														postUpdateEvent.getId(),
+														finalCurrentOldValue,
+														finalCurrentNewValue
+												);
+											} catch (IllegalAccessException | InvocationTargetException e) {
+												log.error(
+														"Something went wrong invoking the post commit update action::: "
+																+ e.getCause()
+												);
+												if (!(e instanceof InvocationTargetException)) {
+													throw new RuntimeException(e);
+												}
 											}
-										}
-									});
-								}
+										});
+									}
+								});
+
 							}
 						}
 					}
