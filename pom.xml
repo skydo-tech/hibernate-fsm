@@ -6,7 +6,7 @@
 
     <groupId>com.skydo.lib</groupId>
     <artifactId>hibernate-fsm</artifactId>
-    <version>0.1.4-RELEASE</version>
+    <version>0.1.5-RELEASE</version>
     <name>Finite State Machine using Hibernate</name>
     <packaging>jar</packaging>
 
@@ -126,6 +126,13 @@
         <developer>
             <name>Raj Sheth</name>
             <email>raj@skydo.com</email>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Nikhil Pandey</name>
+            <email>nikhil@skydo.com</email>
             <roles>
                 <role>developer</role>
             </roles>

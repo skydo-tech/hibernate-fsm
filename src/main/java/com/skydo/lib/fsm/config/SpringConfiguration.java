@@ -17,7 +17,7 @@ public class SpringConfiguration implements BeanPostProcessor {
     final static HashMap<Class<?>, HashMap<String, HashMap<String, Pair<Object, List<Method>>>>> entityToFieldMap
         = new HashMap<>();
 
-    final static HashMap<Class<?>, HashMap<String, HashMap<String, Pair<Object, List<Method>>>>> entityToPostActionMaps
+    final static HashMap<Class<?>, HashMap<String, HashMap<String, List<Pair<Object, List<Method>>>>>> entityToPostActionMaps
         = new HashMap<>();
 
     final static HashMap<Class<?>, HashMap<String, Pair<Object, List<Method>>>> entityToPostActionMapsGeneric
@@ -72,7 +72,7 @@ public class SpringConfiguration implements BeanPostProcessor {
             if (!entityToPostActionMaps.containsKey(entityClass)) {
                 entityToPostActionMaps.put(entityClass, new HashMap<>());
             }
-            HashMap<String, HashMap<String, Pair<Object, List<Method>>>> fieldToValuesMap =
+            HashMap<String, HashMap<String, List<Pair<Object, List<Method>>>>> fieldToValuesMap =
                 entityToPostActionMaps.get(entityClass);
 
             String entityField = postUpdateActionHandler.field();
@@ -80,7 +80,7 @@ public class SpringConfiguration implements BeanPostProcessor {
                 fieldToValuesMap.put(entityField, new HashMap<>());
             }
 
-            HashMap<String, Pair<Object, List<Method>>> valuesToPostCommitActions = fieldToValuesMap.get(entityField);
+            HashMap<String, List<Pair<Object, List<Method>>>> valuesToPostCommitActions = fieldToValuesMap.get(entityField);
             List<Method> postCommitActionMethods = Arrays.stream(bean.getClass().getMethods()).filter(
                 f -> f.isAnnotationPresent(PostUpdateAction.class)
             ).collect(Collectors.toList());
@@ -105,15 +105,31 @@ public class SpringConfiguration implements BeanPostProcessor {
                     }
                 } else {
                     if (valuesToPostCommitActions.containsKey(state)) {
-                        Pair<Object, List<Method>> currentMethodsObjectPair = valuesToPostCommitActions.get(state);
-                        List<Method> methodsSoFar = currentMethodsObjectPair.getSecond();
-                        methodsSoFar.add(method);
-                        valuesToPostCommitActions.remove(state);
-                        valuesToPostCommitActions.put(state, Pair.make(bean, methodsSoFar));
+                        List<Pair<Object, List<Method>>> currentMethodsObjectPair = valuesToPostCommitActions.get(state);
+                        boolean isAlreadyPresent = currentMethodsObjectPair.stream().anyMatch(
+                            pair -> pair.getFirst().equals(bean)
+                        );
+                        if (isAlreadyPresent) {
+                            currentMethodsObjectPair.stream().filter(
+                                pair -> pair.getFirst().equals(bean)
+                            ).findAny().ifPresent(
+                                pair -> {
+                                    List<Method> methodsSoFar = pair.getSecond();
+                                    methodsSoFar.add(method);
+                                }
+                            );
+                            valuesToPostCommitActions.put(state, currentMethodsObjectPair);
+                        } else {
+                            List<Method> methods = new ArrayList<Method>();
+                            methods.add(method);
+                            currentMethodsObjectPair.add(Pair.make(bean, methods));
+                        }
                     } else {
                         List<Method> methods = new ArrayList<Method>();
                         methods.add(method);
-                        valuesToPostCommitActions.put(state, Pair.make(bean, methods));
+                        List<Pair<Object, List<Method>>> methodsPairList = new ArrayList<Pair<Object, List<Method>>>();
+                        methodsPairList.add(Pair.make(bean, methods));
+                        valuesToPostCommitActions.put(state, methodsPairList);
                     }
                 }
             });
